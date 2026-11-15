@@ -1,0 +1,233 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/source-serif-4';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
+
+/* Dark is the default. Light applies only when <html data-theme="light">. */
+@custom-variant light (&:where([data-theme=light], [data-theme=light] *));
+
+:root {
+  --bg: #0b0d10;
+  --ink: #f3f2ee;
+  --muted: #a3a8b0;
+  --rule: #23272e;
+  --soft: rgb(20 23 28 / 0.84);
+  --panel: #12151a;
+  --dot: #aab3c0;
+  --blue: #4d8dff;
+  --red: #f0524f;
+  --yellow: #ffcc33;
+  --green: #36d17c;
+  color-scheme: dark;
+}
+:root[data-theme='light'] {
+  --bg: #fafaf7;
+  --ink: #16181c;
+  --muted: #575c64;
+  --rule: #e0dfda;
+  --soft: rgb(241 240 235 / 0.86);
+  --panel: #f1f0eb;
+  --dot: #3c434d;
+  --blue: #1a5fd6;
+  --red: #d02f2f;
+  --yellow: #946500;
+  --green: #127a3c;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-rule: var(--rule);
+  --color-soft: var(--soft);
+  --color-panel: var(--panel);
+  --color-blue: var(--blue);
+  --color-red: var(--red);
+  --color-yellow: var(--yellow);
+  --color-green: var(--green);
+  --font-serif: 'Source Serif 4 Variable', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    color: var(--ink);
+    font-family: var(--font-serif);
+    font-size: 1.1875rem;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  @media (max-width: 720px) {
+    body {
+      font-size: 1.0625rem;
+    }
+  }
+  a {
+    color: var(--blue);
+    text-underline-offset: 3px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--yellow);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--blue) 35%, transparent);
+  }
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--font-mono);
+  }
+}
+
+@layer components {
+  .wrap {
+    width: 100%;
+    max-width: 50rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  .wrap-wide {
+    width: 100%;
+    max-width: 64rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  .label {
+    font: 500 0.75rem/1.4 var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .mono-sm {
+    font: 400 0.8125rem/1.5 var(--font-mono);
+    color: var(--muted);
+  }
+  .c-blue { color: var(--blue); }
+  .c-red { color: var(--red); }
+  .c-yellow { color: var(--yellow); }
+  .c-green { color: var(--green); }
+
+  /* Highlight TODO markers so they are easy to find before publishing. */
+  .todo {
+    background: color-mix(in srgb, var(--yellow) 18%, transparent);
+    outline: 1px dashed var(--yellow);
+    border-radius: 3px;
+    padding: 0 0.25em;
+  }
+
+  /* ---------- long-form text from Markdown / MDX ---------- */
+  .prose {
+    counter-reset: section 2;
+  }
+  .prose > * + * {
+    margin-top: 1.1em;
+  }
+  .prose h2 {
+    font-size: 1.75rem;
+    line-height: 1.25;
+    font-weight: 700;
+    margin-top: 3.25rem;
+    counter-increment: section;
+  }
+  .prose.numbered h2::before {
+    content: counter(section);
+    font: 500 0.875rem var(--font-mono);
+    margin-right: 0.7rem;
+    vertical-align: 0.3em;
+  }
+  .prose.numbered h2:nth-of-type(4n + 1)::before { color: var(--red); }
+  .prose.numbered h2:nth-of-type(4n + 2)::before { color: var(--yellow); }
+  .prose.numbered h2:nth-of-type(4n + 3)::before { color: var(--green); }
+  .prose.numbered h2:nth-of-type(4n + 4)::before { color: var(--blue); }
+  .prose h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-top: 2.25rem;
+  }
+  .prose ul,
+  .prose ol {
+    padding-left: 1.4em;
+  }
+  .prose ul { list-style: disc; }
+  .prose ol { list-style: decimal; }
+  .prose li + li { margin-top: 0.35em; }
+  .prose li::marker { color: var(--muted); }
+  .prose strong { font-weight: 650; }
+  .prose :not(pre) > code {
+    font-size: 0.85em;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 0.05em 0.35em;
+  }
+  .prose pre {
+    font-size: 0.85rem;
+    line-height: 1.55;
+    background: var(--panel) !important;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+  }
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+    background: var(--soft);
+    border-top: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    display: block;
+    overflow-x: auto;
+  }
+  @media (min-width: 640px) {
+    .prose table { display: table; }
+  }
+  .prose th {
+    font: 600 0.8125rem var(--font-mono);
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--ink);
+    white-space: nowrap;
+  }
+  .prose td {
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  .prose td:first-child code { white-space: nowrap; }
+  .prose img {
+    border-radius: 6px;
+    height: auto;
+  }
+  .prose blockquote {
+    border-left: 3px solid var(--rule);
+    padding-left: 1rem;
+    color: var(--muted);
+  }
+  .prose hr {
+    border: 0;
+    border-top: 1px solid var(--rule);
+    margin: 2.5rem 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

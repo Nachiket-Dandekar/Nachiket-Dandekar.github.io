@@ -1,0 +1,64 @@
+---
+// Small page effects, all skipped when the visitor asks for reduced motion:
+// - [data-scramble]: text decodes from hex digits on load
+// - [data-count]: numbers count up the first time they scroll into view
+// The real text is in the HTML, so it reads correctly without JavaScript.
+---
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce) {
+    const COLORS = ['var(--blue)', 'var(--red)', 'var(--yellow)', 'var(--green)'];
+    document.querySelectorAll<HTMLElement>('[data-scramble]').forEach((el) => {
+      const final = el.textContent ?? '';
+      el.setAttribute('aria-label', final);
+      const HEX = '0123456789ABCDEF';
+      const t0 = performance.now();
+      const finish = () => (el.textContent = final);
+      const fallback = setTimeout(finish, 1800);
+      const tick = (now: number) => {
+        let html = '';
+        let done = true;
+        for (let i = 0; i < final.length; i++) {
+          const ch = final[i];
+          if (ch === ' ' || now - t0 > 250 + i * 45) html += ch;
+          else {
+            done = false;
+            html += `<span aria-hidden="true" style="color:${COLORS[(i + ((now / 90) | 0)) % 4]}">${HEX[(Math.random() * 16) | 0]}</span>`;
+          }
+        }
+        if (done) {
+          clearTimeout(fallback);
+          finish();
+        } else {
+          el.innerHTML = html;
+          requestAnimationFrame(tick);
+        }
+      };
+      requestAnimationFrame(tick);
+    });
+
+    const io = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((en) => {
+          if (!en.isIntersecting) return;
+          io.unobserve(en.target);
+          const el = en.target as HTMLElement;
+          const raw = el.dataset.count ?? '';
+          const end = parseFloat(raw);
+          const dec = (raw.split('.')[1] ?? '').length;
+          const t0 = performance.now();
+          const fallback = setTimeout(() => (el.textContent = raw), 1500);
+          const tick = (now: number) => {
+            const p = Math.min(1, (now - t0) / 900);
+            el.textContent = (end * (1 - Math.pow(1 - p, 3))).toFixed(dec);
+            if (p < 1) requestAnimationFrame(tick);
+            else clearTimeout(fallback);
+          };
+          requestAnimationFrame(tick);
+        }),
+      { threshold: 0.6 },
+    );
+    document.querySelectorAll('[data-count]').forEach((el) => io.observe(el));
+  }
+</script>

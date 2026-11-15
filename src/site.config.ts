@@ -1,0 +1,25 @@
+// Personal details used across the site. Edit this file to change them everywhere.
+// Do not add a phone number or home address here.
+export const SITE = {
+  name: 'Nachiket Dandekar',
+  shortName: 'Nacho Dandekar',
+  nickname: 'Nacho',
+  title: 'Nacho Dandekar',
+  description:
+    'Electrical engineering student at UTSA. FPGA, low-latency systems and chip design projects, with the numbers I measured.',
+  email: 'nachitrex@gmail.com',
+  github: 'https://github.com/nachiket-dandekar',
+  linkedin: 'https://www.linkedin.com/in/nacho-d-5bb422362',
+  // Put your resume at public/resume.pdf. The download links appear only when that file exists.
+  resumeFile: 'resume.pdf',
+};
+
+// Tags used to filter projects. Each tag has one color, used everywhere it appears.
+export const TAGS = ['FPGA', 'PCB', 'embedded', 'software'] as const;
+export type Tag = (typeof TAGS)[number];
+export const TAG_COLOR: Record<Tag, 'blue' | 'yellow' | 'green' | 'red'> = {
+  FPGA: 'blue',
+  PCB: 'yellow',
+  embedded: 'green',
+  software: 'red',
+};

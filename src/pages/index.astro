@@ -1,0 +1,133 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectRow from '../components/ProjectRow.astro';
+import ProfilePhoto from '../components/ProfilePhoto.astro';
+import { SITE } from '../site.config';
+import { getProjects, hasResume, url } from '../lib/utils';
+
+const projects = await getProjects();
+const featured = projects.filter((p) => p.data.featured);
+const shown = featured.length ? featured : projects.slice(0, 3);
+const resume = hasResume();
+---
+
+<BaseLayout>
+  <div class="wrap">
+    <section class="hero" aria-labelledby="name">
+      <div>
+        <p class="kicker">Electrical engineering &middot; UTSA</p>
+        <h1 id="name" data-scramble>{SITE.name}</h1>
+        <p class="intro">
+          I go by {SITE.nickname}. I'm an electrical engineering freshman at UTSA, and I want to work on FPGAs, low-latency
+          systems and chip design. Below are the things I've built, with the numbers I measured.
+        </p>
+        <ul class="facts" aria-label="Highlights">
+          <li><i style="background:var(--blue)"></i>NASA JSC intern, SEV team, 2026</li>
+          <li><i style="background:var(--red)"></i>FRC 2468 electrical co-lead, 2022 to 2026</li>
+          {
+            resume && (
+              <li class="link">
+                <a href={url(`/${SITE.resumeFile}`)} download>
+                  resume.pdf
+                </a>
+              </li>
+            )
+          }
+        </ul>
+      </div>
+      <ProfilePhoto size={150} class="hero-photo" />
+    </section>
+
+    <section aria-labelledby="latest">
+      <div class="section-head">
+        <h2 id="latest" class="label">{shown.length > 1 ? 'Projects' : 'Latest project'}</h2>
+        <a href={url('/projects/')} class="mono-sm">All projects &rarr;</a>
+      </div>
+      <div class="list">
+        {shown.map((p, i) => <ProjectRow project={p} priority={i === 0} />)}
+        {shown.length === 0 && <p class="mono-sm py-6">No projects yet.</p>}
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .hero {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    padding: 4.5rem 0 3rem;
+  }
+  .kicker {
+    font: 500 0.8125rem var(--font-mono);
+    color: var(--yellow);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.9rem;
+  }
+  h1 {
+    font-size: 3.5rem;
+    line-height: 1.05;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    min-height: 1.05em;
+  }
+  .intro {
+    max-width: 54ch;
+  }
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.6rem;
+    margin-top: 1.1rem;
+  }
+  .facts li {
+    font: 0.78rem var(--font-mono);
+    border: 1px solid var(--rule);
+    background: var(--soft);
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem;
+  }
+  .facts i {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    margin-right: 0.5rem;
+    vertical-align: 1px;
+  }
+  .facts li.link {
+    border-color: color-mix(in srgb, var(--green) 55%, transparent);
+  }
+  .facts li.link a {
+    color: var(--green);
+    text-decoration: none;
+  }
+  .facts li.link:hover {
+    background: color-mix(in srgb, var(--green) 15%, transparent);
+  }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.6rem;
+  }
+  .list {
+    border-top: 1px solid var(--ink);
+  }
+  @media (max-width: 720px) {
+    .hero {
+      gap: 1rem;
+      padding: 2rem 0 2rem;
+      align-items: flex-start;
+    }
+    h1 {
+      font-size: 2.3rem;
+    }
+    .hero :global(.hero-photo) {
+      --size: 72px !important;
+      order: 2;
+    }
+  }
+</style>

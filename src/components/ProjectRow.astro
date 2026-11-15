@@ -1,0 +1,199 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import Tag from './Tag.astro';
+import { TAG_COLOR } from '../site.config';
+import { url, formatDate } from '../lib/utils';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  priority?: boolean;
+}
+const { project, priority = false } = Astro.props;
+const d = project.data;
+const head = d.stats[0];
+const color = TAG_COLOR[d.tags[0]];
+const isTodo = (s?: string) => !!s && s.trim().startsWith('TODO');
+const countable = head && /^\d+(\.\d+)?$/.test(head.value) ? head.value : undefined;
+---
+
+<a class="row" href={url(`/projects/${project.id}/`)} data-tags={d.tags.join(',')}>
+  <div class="thumb">
+    {
+      d.cover ? (
+        <Image src={d.cover} alt={d.coverAlt ?? ''} widths={[320, 480, 720]} sizes="(max-width: 720px) 100vw, 240px" priority={priority} />
+      ) : (
+        <div class="no-cover" aria-hidden="true">
+          <span>photo coming</span>
+        </div>
+      )
+    }
+  </div>
+  <div class="body">
+    <div class="meta">
+      {d.tags.map((t) => <Tag tag={t} />)}
+      <span class="mono-sm">{formatDate(d.date, 'short')}</span>
+      {d.status && <span class="mono-sm">{d.status}</span>}
+      {d.draft && <span class="draft">draft, hidden on the live site</span>}
+    </div>
+    <h3>
+      {d.title} <span class="arrow" aria-hidden="true">&rarr;</span>
+    </h3>
+    <p class:list={[{ todo: isTodo(d.blurb ?? d.summary) }]}>{d.blurb ?? d.summary}</p>
+  </div>
+  {
+    head && (
+      <div class={`num c-${color}`}>
+        <span class:list={['value', { todo: isTodo(head.value) }]}>
+          {countable ? <span data-count={countable}>{head.value}</span> : head.value}
+          {head.unit && <span class="unit">{head.unit}</span>}
+        </span>
+        <small class:list={[{ todo: isTodo(head.label) }]}>{head.label}</small>
+      </div>
+    )
+  }
+</a>
+
+<style>
+  .row {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: 240px 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+    padding: 1.4rem 0;
+    border-bottom: 1px solid var(--rule);
+    color: inherit;
+    text-decoration: none;
+  }
+  .row::before {
+    content: '';
+    position: absolute;
+    inset: 0.25rem -1rem;
+    z-index: -1;
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.25s;
+    background:
+      radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--blue) 14%, transparent), transparent 65%),
+      var(--soft);
+  }
+  .row:hover::before,
+  .row:focus-visible::before {
+    opacity: 1;
+  }
+  .thumb {
+    width: 240px;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .thumb :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .row:hover .thumb :global(img) {
+    transform: scale(1.05);
+  }
+  .no-cover {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    font: 0.75rem var(--font-mono);
+    color: var(--muted);
+    background-image: radial-gradient(var(--rule) 1.5px, transparent 1.5px);
+    background-size: 14px 14px;
+  }
+  .no-cover span {
+    background: var(--panel);
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.75rem;
+    margin-bottom: 0.4rem;
+  }
+  .draft {
+    font: 0.75rem var(--font-mono);
+    color: var(--yellow);
+  }
+  h3 {
+    font-size: 1.6rem;
+    line-height: 1.2;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+  .arrow {
+    display: inline-block;
+    color: var(--blue);
+    transition: transform 0.25s;
+  }
+  .row:hover .arrow {
+    transform: translateX(5px);
+  }
+  p {
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+  .num {
+    text-align: right;
+    max-width: 12rem;
+  }
+  .value {
+    display: block;
+    font: 600 2.5rem/1 var(--font-mono);
+    white-space: nowrap;
+  }
+  :root:not([data-theme='light']) .value {
+    text-shadow: 0 0 26px color-mix(in srgb, currentColor 35%, transparent);
+  }
+  .unit {
+    margin-left: 0.3em;
+  }
+  small {
+    display: block;
+    margin-top: 0.5rem;
+    font: 0.75rem/1.4 var(--font-mono);
+    color: var(--muted);
+  }
+  @media (max-width: 720px) {
+    .row {
+      grid-template-columns: 1fr auto;
+      gap: 0.75rem 1rem;
+      align-items: start;
+    }
+    .thumb {
+      grid-column: 1 / -1;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+    }
+    .value {
+      font-size: 1.9rem;
+    }
+    .num {
+      max-width: 8.5rem;
+    }
+    h3 {
+      font-size: 1.35rem;
+    }
+  }
+</style>
+
+<script>
+  // Glow that follows the mouse over a project row.
+  document.querySelectorAll<HTMLElement>('a.row').forEach((r) =>
+    r.addEventListener('pointermove', (e) => {
+      const b = r.getBoundingClientRect();
+      r.style.setProperty('--mx', `${e.clientX - b.left}px`);
+      r.style.setProperty('--my', `${e.clientY - b.top}px`);
+    }),
+  );
+</script>

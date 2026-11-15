@@ -1,0 +1,15 @@
+---
+import { SITE } from '../site.config';
+---
+
+<footer class="mt-24 border-t border-rule">
+  <div class="wrap flex flex-wrap items-center justify-between gap-4 py-8 font-mono text-sm text-muted">
+    <span>{SITE.name}</span>
+    <span class="flex flex-wrap gap-5">
+      <a href={`mailto:${SITE.email}`}>Email</a>
+      <a href={SITE.github} rel="me">GitHub</a>
+      <a href={SITE.linkedin} rel="me">LinkedIn</a>
+    </span>
+    <span class="w-full text-xs">No trackers, no cookies.</span>
+  </div>
+</footer>

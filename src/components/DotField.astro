@@ -1,0 +1,160 @@
+---
+// Background dot grid. It is loud on the first screen and fades as you scroll into the content.
+// Dots react to mouse MOVEMENT (a short colored wake), never to a resting cursor, so reading is not disturbed.
+// A click or tap on empty space sends a ripple. With "reduce motion" turned on, it draws one still frame.
+---
+
+<canvas id="dot-field" aria-hidden="true"></canvas>
+
+<style>
+  #dot-field {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  const canvas = document.getElementById('dot-field') as HTMLCanvasElement | null;
+  const ctx = canvas?.getContext('2d');
+  if (canvas && ctx) {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const root = document.documentElement;
+    const G = 26; // grid spacing in px
+    const R = 140; // wake radius
+    const LIFE = 900; // wake lifetime in ms
+    let W = 0;
+    let H = 0;
+    let dot = '#aab3c0';
+    let hues: string[] = [];
+    type Stamp = { x: number; y: number; t: number };
+    type Ripple = { x: number; y: number; r: number; s: number };
+    let stamps: Stamp[] = [];
+    let ripples: Ripple[] = [];
+    let running = false;
+    let last = 0;
+    let frameCount = 0;
+
+    const hash = (x: number, y: number) => {
+      let n = (x * 73856093) ^ (y * 19349663);
+      n = Math.imul(n ^ (n >>> 13), 1274126177);
+      return (n ^ (n >>> 16)) >>> 0;
+    };
+
+    function readColors() {
+      const cs = getComputedStyle(root);
+      dot = cs.getPropertyValue('--dot').trim();
+      hues = ['--blue', '--red', '--yellow', '--green'].map((n) => cs.getPropertyValue(n).trim());
+    }
+
+    function draw(now: number) {
+      const dt = Math.min(0.05, (now - last) / 1000 || 0);
+      last = now;
+      ctx!.clearRect(0, 0, W, H);
+      const fade = Math.max(0.1, 1 - window.scrollY / (H * 0.85));
+      const t = now / 1000;
+      stamps = stamps.filter((s) => now - s.t < LIFE);
+      for (const r of ripples) {
+        r.r += 480 * dt;
+        r.s *= Math.pow(0.3, dt);
+      }
+      ripples = ripples.filter((r) => r.s > 0.03);
+
+      for (let y = G / 2; y < H + G; y += G) {
+        for (let x = G / 2; x < W + G; x += G) {
+          let k = 0;
+          let sx = 0;
+          let sy = 0;
+          for (const s of stamps) {
+            const dx = x - s.x;
+            const dy = y - s.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 > R * R) continue;
+            const d = Math.sqrt(d2) || 1;
+            const v = (1 - d / R) * (1 - (now - s.t) / LIFE);
+            if (v > k) {
+              k = v;
+              sx = dx / d;
+              sy = dy / d;
+            }
+          }
+          k = k * k * (3 - 2 * k);
+          let boost = 0;
+          for (const r of ripples) {
+            const rd = Math.hypot(x - r.x, y - r.y);
+            boost += Math.max(0, 1 - Math.abs(rd - r.r) / 30) * r.s;
+          }
+          const amb = 0.5 + 0.5 * Math.sin(t * 0.6 - (x * 0.8 + y) * 0.005);
+          const e = Math.min(1, k + boost);
+          const h = hash(x, y);
+          ctx!.globalAlpha = Math.min(1, (0.16 + 0.1 * amb + 0.6 * e) * fade);
+          ctx!.fillStyle = e > 0.05 || h % 9 === 0 ? hues[h & 3] : dot;
+          const rad = (1.2 + 0.5 * amb + 2 * e) / 2 + 0.2;
+          ctx!.beginPath();
+          ctx!.arc(x + sx * k * 7, y + sy * k * 7, rad, 0, 6.283);
+          ctx!.fill();
+        }
+      }
+      ctx!.globalAlpha = 1;
+    }
+
+    function loop(now: number) {
+      if (!running) return;
+      // When nothing is happening, draw at half rate to save battery.
+      const idle = stamps.length === 0 && ripples.length === 0;
+      if (!idle || frameCount++ % 2 === 0) draw(now);
+      else last = now;
+      requestAnimationFrame(loop);
+    }
+    function start() {
+      if (reduce || running) return;
+      running = true;
+      last = performance.now();
+      requestAnimationFrame(loop);
+    }
+    function stop() {
+      running = false;
+    }
+    function setup() {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas!.width = W * dpr;
+      canvas!.height = H * dpr;
+      canvas!.style.width = `${W}px`;
+      canvas!.style.height = `${H}px`;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      readColors();
+      if (reduce) draw(0);
+    }
+
+    let resizeTimer: number | undefined;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(setup, 150);
+    });
+    if (reduce) window.addEventListener('scroll', () => draw(0), { passive: true });
+    window.addEventListener(
+      'pointermove',
+      (e) => {
+        if (e.pointerType !== 'mouse') return;
+        const l = stamps[stamps.length - 1];
+        if (!l || Math.hypot(e.clientX - l.x, e.clientY - l.y) > 14) stamps.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+        if (stamps.length > 40) stamps.shift();
+      },
+      { passive: true },
+    );
+    window.addEventListener('pointerdown', (e) => {
+      if (reduce) return;
+      const target = e.target as Element | null;
+      if (target?.closest('a, button, input, select, textarea, summary, [role="button"], iframe, svg')) return;
+      ripples.push({ x: e.clientX, y: e.clientY, r: 0, s: 1 });
+    });
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+    new MutationObserver(setup).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+
+    setup();
+    start();
+  }
+</script>

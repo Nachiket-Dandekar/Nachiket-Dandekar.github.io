@@ -1,0 +1,61 @@
+---
+import { SITE } from '../site.config';
+import { url } from '../lib/utils';
+import ThemeToggle from './ThemeToggle.astro';
+
+const links = [
+  { href: '/projects/', label: 'Projects' },
+  { href: '/about/', label: 'About' },
+  { href: '/contact/', label: 'Contact' },
+];
+const here = Astro.url.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ''), '') || '/';
+const isCurrent = (href: string) => here === href || (href !== '/' && here.startsWith(href));
+---
+
+<header class="site-header sticky top-0 z-20">
+  <div class="wrap flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-3 sm:h-15 sm:py-0">
+    <a href={url('/')} class="font-serif text-lg font-semibold text-ink no-underline">{SITE.shortName}</a>
+    <nav aria-label="Main" class="order-3 flex w-full gap-5 font-mono text-sm sm:order-2 sm:ml-auto sm:w-auto sm:items-center">
+      {
+        links.map((l) => (
+          <a href={url(l.href)} aria-current={isCurrent(l.href) ? 'page' : undefined} class="nav-link">
+            {l.label}
+          </a>
+        ))
+      }
+    </nav>
+    <div class="order-2 ml-auto sm:order-3 sm:ml-0"><ThemeToggle /></div>
+  </div>
+  <div class="color-bar" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+</header>
+
+<style>
+  .site-header {
+    background: color-mix(in srgb, var(--bg) 72%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .nav-link {
+    color: var(--muted);
+    text-decoration: none;
+    padding-block: 0.25rem;
+  }
+  .nav-link:hover {
+    color: var(--ink);
+  }
+  .nav-link[aria-current='page'] {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--yellow);
+    text-decoration-thickness: 2px;
+  }
+  .color-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    height: 3px;
+  }
+  .color-bar i:nth-child(1) { background: var(--blue); }
+  .color-bar i:nth-child(2) { background: var(--red); }
+  .color-bar i:nth-child(3) { background: var(--yellow); }
+  .color-bar i:nth-child(4) { background: var(--green); }
+</style>
