@@ -128,7 +128,7 @@
 
   /* ---------- long-form text from Markdown / MDX ---------- */
   .prose {
-    counter-reset: section 2;
+    counter-reset: section 2 figure;
   }
   .prose > * + * {
     margin-top: 1.1em;

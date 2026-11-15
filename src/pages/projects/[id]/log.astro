@@ -1,0 +1,64 @@
+---
+import { getCollection, getEntry, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getProjects, url } from '../../../lib/utils';
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  const ids = new Set(projects.map((p) => p.id));
+  const logs = await getCollection('logs', (l) => ids.has(l.id));
+  return logs.map((log) => ({ params: { id: log.id }, props: { log } }));
+}
+
+interface Props {
+  log: CollectionEntry<'logs'>;
+}
+const { log } = Astro.props;
+const project = await getEntry('projects', log.id);
+const { Content } = await render(log);
+const title = `${log.data.title}: ${project?.data.title ?? log.id}`;
+---
+
+<BaseLayout title={title} description={`Build log for ${project?.data.title ?? log.id}, stage by stage.`}>
+  <article class="wrap">
+    <a href={url(`/projects/${log.id}/`)} class="back mono-sm">&larr; Back to the project</a>
+    <p class="label mt-6">{log.data.title}</p>
+    <h1>{project?.data.title}</h1>
+    <p class="mono-sm">Newest entries first. Copied from the project's docs/log.md.</p>
+    <div class="prose log">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .back {
+    display: inline-block;
+    margin-top: 2rem;
+    text-decoration: none;
+  }
+  h1 {
+    font-size: 2.4rem;
+    line-height: 1.15;
+    font-weight: 700;
+    margin: 0.4rem 0 0.6rem;
+  }
+  .log :global(h2) {
+    font: 600 1.15rem/1.4 var(--font-mono);
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+  }
+  .log :global(p:has(> img)) {
+    margin-top: 1.25rem;
+  }
+  .log :global(img) {
+    border: 1px solid var(--rule);
+    display: block;
+  }
+  @media (max-width: 720px) {
+    h1 {
+      font-size: 1.8rem;
+    }
+  }
+</style>

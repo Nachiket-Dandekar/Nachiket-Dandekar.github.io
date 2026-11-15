@@ -1,0 +1,170 @@
+---
+title: FPGA tick-to-trade on an Arty A7
+date: 2026-11-15
+tags: [FPGA]
+summary: >-
+  A trading pipeline in Verilog on a Digilent Arty A7-100T (Xilinx Artix-7). It receives real Nasdaq ITCH 5.0
+  market data over Ethernet, keeps a limit order book for one stock, and sends an order back when the best ask
+  price changes.
+measured: Measured on the board at 100 MHz with 208,906 real Nasdaq messages replayed from a Raspberry Pi 5.
+blurb: Real Nasdaq market data in over Ethernet, orders out, on an Arty A7 FPGA board.
+stats:
+  - value: '130'
+    unit: ns
+    label: median tick to trade, measured on the board
+  - value: 159/159
+    label: orders match the Python reference model
+  - value: '0'
+    label: CRC errors, lost packets, overflows or dropped orders
+  - value: '100'
+    unit: MHz
+    label: meets timing with 0.424 ns of slack
+cover: ./stage3_board_and_pi.jpg
+coverAlt: Raspberry Pi 5 connected to the Arty A7-100T by an Ethernet cable
+# TODO: add the YouTube video id once the video is up, e.g. youtube: dQw4w9WgXcQ
+# TODO: put the real repo name in the link below. Set repoPublic to true when the repo is public.
+repo: https://github.com/nachiket-dandekar/TODO-repo-name
+repoPublic: false
+downloads:
+  - label: Latency of all 159 orders (CSV)
+    file: latency.csv
+featured: true
+---
+
+import board from './stage3_board_and_pi.jpg';
+import timingFail from './timing_100mhz_fail.png';
+import timingPass from './timing_100mhz_pass.png';
+import boardRun from './stage4_board_full_file.png';
+import latency from './latency.csv?raw';
+
+## Why I built it
+
+"Tick to trade" is the time between a market update arriving and your order leaving. Trading firms build this path in FPGAs because software cannot react in nanoseconds. I wanted to build the whole path myself, measure it on real hardware, and find out what limits it.
+
+## How it works
+
+A Raspberry Pi 5 replays a slice of a real Nasdaq ITCH 5.0 file to the board over a direct Ethernet cable. The FPGA reads each message, updates the order book, and when the best ask price changes and is at or below a limit price, it sends a buy order back to the Pi as a UDP packet.
+
+<Figure
+  src={board}
+  alt="Raspberry Pi 5 connected to the Arty A7-100T by an Ethernet cable"
+  caption="The test setup. The Pi replays Nasdaq data to the Arty A7-100T and checks every order that comes back."
+  maxHeight={560}
+  wide
+/>
+
+Data flows through these modules in order. Blue is the receive path, yellow is the trading logic and green is the send path.
+
+<Pipeline
+  label="Tick-to-trade data path"
+  steps={[
+    { name: 'mii_rx', note: 'Takes 4-bit nibbles from the Ethernet chip, builds bytes, checks the frame CRC', color: 'blue' },
+    { name: 'async_fifo', note: "Moves bytes from the Ethernet chip's 25 MHz clock to the 100 MHz system clock", color: 'blue' },
+    { name: 'udp_strip', note: 'Checks the Ethernet, IP and UDP headers, tracks MoldUDP64 sequence numbers, passes on the payload', color: 'blue' },
+    { name: 'sync_fifo', note: '4,096-byte buffer so the receiver never has to wait for the order book', color: 'blue' },
+    { name: 'itch_parser', note: 'Finds message boundaries and pulls out the fields of add, execute, cancel, delete and replace messages', color: 'yellow' },
+    { name: 'order_book', note: 'Order table (1,024 sets of 4) and 4,096 price levels per side in block RAM. Tracks best bid and best ask', color: 'yellow' },
+    { name: 'trigger', note: 'Fires a buy order when the best ask price changes and is at or below a limit', color: 'yellow' },
+    { name: 'order_tx', note: 'Queues orders and builds the Ethernet, IP and UDP frame. The payload is modeled on the Nasdaq OUCH Enter Order message', color: 'green' },
+    { name: 'mii_tx', note: 'Adds preamble and CRC and sends the frame to the Ethernet chip', color: 'green' },
+  ]}
+/>
+
+The board top, `arty_t2t_top`, handles clocks, resets, pins and LEDs, and prints a status line over UART once per second.
+
+One choice matters a lot for latency. The design acts on a message before the frame's CRC has been checked. Waiting for the end of the frame would add far more delay than everything else combined, so bad frames are counted instead of blocked.
+
+### How I checked it
+
+The Python model in `scripts/book.py` is the reference. Every hardware result is compared against it.
+
+- 35 cocotb tests in 11 suites, run with Icarus Verilog. Each module has its own suite, and two suites run the whole design with Ethernet frames on the pins.
+- Real data in simulation: the full 200,000-message stream through the simulated Ethernet path, with every book update and every order checked.
+- Real data on the board: the Pi replays the file, collects the orders that come back and compares each one with the model.
+- The tests were checked too, by breaking the design on purpose and confirming a test fails each time.
+
+On the Pi, one command runs the whole board test. It prints how many orders came back, how many match the model, and the latency numbers.
+
+```sh
+python3 tick_test.py itch_orders.bin --host 10.0.0.255 --gap 0.001
+```
+
+{/* TODO: add a short Verilog snippet here if you want one, for example the pipelined price-to-level step. Paste only the few lines you want to show. */}
+
+## What went wrong and what I optimized
+
+The first build at 100 MHz failed timing by 6.263 ns, with 1,177 failing endpoints. The slowest path took about 16.3 ns, so the design topped out near 61 MHz.
+
+The timing report showed the slow path. The order book turned a price into a price level with a divide by 100, and used the result as a memory address in the same clock cycle. That path had 30 levels of logic.
+
+I ran the design at 50 MHz to get it working, then fixed the path. The divide became a multiply by a reciprocal spread over several cycles, and the memory read and write steps were split apart. The design now meets 100 MHz.
+
+<BeforeAfter
+  rows={[
+    { label: 'Worst slack at 100 MHz', before: '-6.263 ns', after: '+0.424 ns' },
+    { label: 'Failing timing endpoints', before: '1,177', after: '0' },
+    { label: 'System clock on the board', before: '50 MHz', after: '100 MHz' },
+  ]}
+/>
+
+<Figure src={timingFail} alt="Vivado design timing summary for the first 100 MHz build: worst negative slack -6.263 ns, 1,177 failing endpoints, timing constraints not met" caption="Timing summary of the first build at 100 MHz." />
+
+<Figure src={timingPass} alt="Vivado timing table per clock after the fix: every clock has 0 failing endpoints, and the 100 MHz system clock has 0.424 ns of worst slack" caption="Timing per clock at 100 MHz after the fix. All constraints are met." />
+
+## Results
+
+Measured on the board at 100 MHz, replaying 208,906 real Nasdaq ITCH messages from a Raspberry Pi 5. Latency runs from the last byte of market data in to the first byte of the order out. It is measured inside the FPGA: every received byte is stamped with a clock cycle count, and each order packet carries its own latency number back to the Pi.
+
+| | |
+|---|---|
+| Orders sent | 159 of 159 match the Python model |
+| Errors | 0 CRC errors, 0 lost packets, 0 buffer overflows, 0 dropped orders |
+| Latency, minimum | 130 ns (13 clock cycles) |
+| Latency, median | 130 ns |
+| Latency, 99th percentile | 8.45 us |
+| Latency, maximum | 15.33 us |
+| Timing | Meets 100 MHz with 0.424 ns of slack |
+| Size | 3,452 LUTs (5.4%), 3,243 flip-flops (2.6%), 26.5 block RAM tiles (19.6%), 2 DSP blocks |
+
+<PointChart
+  csv={latency}
+  y="latency_cycles"
+  scale={10}
+  unit="ns"
+  log
+  title="Latency of each of the 159 orders"
+  xLabel="order"
+  groups={[
+    { label: 'No wait, 160 ns or less', test: (v) => v <= 160, color: 'blue' },
+    { label: 'Waited behind an earlier order', test: (v) => v > 160, color: 'red' },
+  ]}
+  reference={{ value: 130, label: 'median 130 ns' }}
+  caption="Latency of each order on a log scale. Hover or tap a dot to read its value."
+/>
+
+151 of the 159 orders took 160 ns or less. The other 8 each arrived 1 to 4 messages after the previous order, so they had to wait for that order to finish sending. One order frame takes about 10 us on a 100 Mb/s link.
+
+### Where the time goes
+
+| Part | Time |
+|---|---|
+| FPGA logic: buffer, parser, order book, trigger, frame builder | 130 ns |
+| Two clock crossings between the Ethernet chip's clocks and the system clock | 190 to 240 ns (from simulation) |
+| Total at the board's pins for a typical order | about 320 to 370 ns |
+
+The delay inside the Ethernet chip itself is not included. It cannot be seen from inside the FPGA.
+
+<Figure src={boardRun} alt="Terminal output: the Pi sent 208,906 messages in 4,580 packets and got 159 of 159 orders back with 0 mismatches. Below it, the status lines printed by the board over UART." caption="The full file on the board. 159 of 159 orders match the model." />
+
+### Limits
+
+- The 100 Mb/s Ethernet port is the biggest limit. A byte takes 80 ns to arrive and an order frame takes 10 us to send. The logic is already faster than the link.
+- When the best price level empties, the order book looks for the next one level by level. The worst case is 4,095 clock cycles. The real data never came close, but the worst case is there.
+- One stock at a time, in a price window of $40.96 around a base price.
+- Orders go out as plain UDP. A real exchange connection is a TCP session with logins and acknowledgements.
+
+## What I would do next
+
+- A custom FPGA board with a faster Ethernet link, since the link is what holds this design back.
+- A bitmap in the order book so finding the next price level takes a fixed two cycles.
+- Removing idle cycles on the main path to get from 13 cycles down to about 8.

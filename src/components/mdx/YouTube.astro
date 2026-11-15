@@ -1,0 +1,136 @@
+---
+// Lazy YouTube player. The page shows a thumbnail that is downloaded at build time and served
+// from this site. The player (from the privacy-enhanced youtube-nocookie.com domain) loads only
+// after the visitor presses play. With no id, it shows a clean placeholder.
+import { getImage } from 'astro:assets';
+
+interface Props {
+  id?: string;
+  title: string;
+}
+const { id, title } = Astro.props;
+
+let thumb: string | undefined;
+if (id) {
+  for (const name of ['maxresdefault', 'hqdefault']) {
+    try {
+      const img = await getImage({ src: `https://i.ytimg.com/vi/${id}/${name}.jpg`, inferSize: true, width: 1280, format: 'webp' });
+      thumb = img.src;
+      break;
+    } catch {
+      // try the next size; if none work, the button shows without a thumbnail
+    }
+  }
+}
+---
+
+{
+  id ? (
+    <div class="yt" data-yt={id} data-title={title}>
+      <button type="button" class="play" aria-label={`Play video: ${title}`}>
+        {thumb && <img src={thumb} alt="" loading="lazy" decoding="async" />}
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 68 48" width="68" height="48">
+            <rect width="68" height="48" rx="12" fill="currentColor" />
+            <path d="M27 14 L47 24 L27 34 Z" fill="var(--bg)" />
+          </svg>
+        </span>
+        <span class="note">Loads YouTube (privacy-enhanced mode) when you press play</span>
+      </button>
+      <noscript>
+        <a href={`https://www.youtube.com/watch?v=${id}`}>Watch "{title}" on YouTube</a>
+      </noscript>
+    </div>
+  ) : (
+    <div class="yt empty">
+      <p>Video walkthrough coming soon.</p>
+    </div>
+  )
+}
+
+<style>
+  .yt {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--rule);
+    background: var(--panel);
+  }
+  .yt :global(iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .play {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    color: var(--red);
+  }
+  .play img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .icon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.2s;
+  }
+  .play:hover .icon,
+  .play:focus-visible .icon {
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+  .note {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.6rem;
+    font: 0.72rem var(--font-mono);
+    color: #f3f2ee;
+    background: rgb(0 0 0 / 0.6);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+  }
+  .empty {
+    display: grid;
+    place-items: center;
+    background-color: var(--soft);
+    background-image: radial-gradient(var(--rule) 1.5px, transparent 1.5px);
+    background-size: 18px 18px;
+  }
+  .empty p {
+    font: 0.9rem var(--font-mono);
+    color: var(--muted);
+    background: var(--panel);
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-yt]').forEach((wrap) => {
+    const button = wrap.querySelector('button');
+    button?.addEventListener('click', () => {
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(wrap.dataset.yt ?? '')}?autoplay=1&rel=0`;
+      iframe.title = wrap.dataset.title ?? 'YouTube video';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      button.replaceWith(iframe);
+      iframe.focus();
+    });
+  });
+</script>

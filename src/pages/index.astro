@@ -118,16 +118,25 @@ const resume = hasResume();
   }
   @media (max-width: 720px) {
     .hero {
-      gap: 1rem;
-      padding: 2rem 0 2rem;
-      align-items: flex-start;
+      position: relative;
+      display: block;
+      padding: 1.75rem 0 1.75rem;
+    }
+    .kicker {
+      padding-right: 4.5rem;
     }
     h1 {
       font-size: 2.3rem;
+      padding-right: 4.5rem;
     }
     .hero :global(.hero-photo) {
-      --size: 72px !important;
-      order: 2;
+      --size: 60px !important;
+      position: absolute;
+      right: 0;
+      top: 1.75rem;
+    }
+    .facts li {
+      font-size: 0.72rem;
     }
   }
 </style>

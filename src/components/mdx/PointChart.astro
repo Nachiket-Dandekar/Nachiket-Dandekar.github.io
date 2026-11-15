@@ -1,0 +1,355 @@
+---
+// Dot chart drawn at build time from a CSV file in the project folder.
+// Usage in MDX:
+//   import latency from './latency.csv?raw';
+//   <PointChart csv={latency} y="latency_cycles" scale={10} unit="ns" log
+//     title="Latency of each order" xLabel="order number"
+//     groups={[{ label: 'No wait', test: (v) => v <= 160, color: 'blue' }, { label: 'Waited', test: (v) => v > 160, color: 'red' }]}
+//     reference={{ value: 130, label: 'median 130 ns' }} />
+type Color = 'blue' | 'red' | 'yellow' | 'green';
+interface Group {
+  label: string;
+  test: (v: number) => boolean;
+  color: Color;
+}
+interface Props {
+  csv: string;
+  /** Column for the y value. */
+  y: string;
+  /** Column for the x value. Defaults to the row number (1, 2, 3, ...). */
+  x?: string;
+  /** Multiply y by this, e.g. 10 to turn 100 MHz clock cycles into ns. */
+  scale?: number;
+  unit?: string;
+  log?: boolean;
+  title: string;
+  xLabel?: string;
+  groups?: Group[];
+  reference?: { value: number; label: string };
+  caption?: string;
+}
+
+const { csv, y, x, scale = 1, unit = '', log = false, title, xLabel, reference, caption } = Astro.props;
+const groups: Group[] = Astro.props.groups ?? [{ label: title, test: () => true, color: 'blue' }];
+
+// ---- parse ----
+const lines = csv.trim().split(/\r?\n/);
+const header = lines[0].split(',').map((h) => h.trim());
+const yi = header.indexOf(y);
+const xi = x ? header.indexOf(x) : -1;
+if (yi < 0) throw new Error(`PointChart: column "${y}" not found in CSV (${header.join(', ')})`);
+const rows = lines.slice(1).map((line, i) => {
+  const cells = line.split(',');
+  const yv = parseFloat(cells[yi]) * scale;
+  const xv = xi >= 0 ? parseFloat(cells[xi]) : i + 1;
+  const gi = groups.findIndex((g) => g.test(yv));
+  return { x: xv, y: yv, g: gi < 0 ? 0 : gi };
+});
+
+// ---- format ----
+function fmt(v: number): string {
+  if (unit === 'ns') {
+    if (v >= 1e6) return `${+(v / 1e6).toFixed(2)} ms`;
+    if (v >= 1e3) return `${+(v / 1e3).toFixed(2)} us`;
+    return `${+v.toFixed(1)} ns`;
+  }
+  return `${+v.toFixed(2)}${unit ? ` ${unit}` : ''}`;
+}
+
+// ---- scales ----
+const xs = rows.map((r) => r.x);
+const ysv = rows.map((r) => r.y);
+const xMin = Math.min(...xs);
+const xMax = Math.max(...xs);
+const yMaxRaw = Math.max(...ysv);
+const yMinRaw = Math.min(...ysv);
+let yLo: number;
+let yHi: number;
+let yTicks: number[];
+if (log) {
+  yLo = Math.pow(10, Math.floor(Math.log10(yMinRaw)));
+  yHi = yMaxRaw * 1.35;
+  yTicks = [];
+  for (let t = yLo; t <= yHi; t *= 10) yTicks.push(t);
+} else {
+  yLo = 0;
+  const step = Math.pow(10, Math.floor(Math.log10(yMaxRaw || 1)));
+  yHi = Math.ceil((yMaxRaw * 1.1) / step) * step;
+  yTicks = Array.from({ length: 5 }, (_, i) => (yHi / 4) * i);
+}
+
+// The chart is drawn twice: a wide version and a narrow one for phones, so the text stays readable.
+function layout(W: number, H: number, xTickCount: number, r: [number, number]) {
+  const m = { l: 60, r: 14, t: 14, b: 44 };
+  const iw = W - m.l - m.r;
+  const ih = H - m.t - m.b;
+  const sx = (v: number) => m.l + (xMax === xMin ? iw / 2 : ((v - xMin) / (xMax - xMin)) * iw);
+  const sy = (v: number) =>
+    log ? m.t + ih - ((Math.log10(v) - Math.log10(yLo)) / (Math.log10(yHi) - Math.log10(yLo))) * ih : m.t + ih - ((v - yLo) / (yHi - yLo)) * ih;
+  const xTicks = Array.from({ length: xTickCount }, (_, i) => Math.round(xMin + ((xMax - xMin) * i) / (xTickCount - 1)));
+  const points = rows.map((row) => ({
+    cx: +sx(row.x).toFixed(1),
+    cy: +sy(row.y).toFixed(1),
+    r: row.g === 0 ? r[0] : r[1],
+    label: `${xLabel ? `${xLabel} ` : ''}${row.x}: ${fmt(row.y)}`,
+    g: row.g,
+  }));
+  return { W, H, m, iw, sx, sy, xTicks, points };
+}
+const views = [
+  { cls: 'wide', ...layout(720, 320, 5, [3.5, 5]) },
+  { cls: 'narrow', ...layout(360, 300, 4, [2.6, 4]) },
+];
+
+const counts = groups.map((_, gi) => rows.filter((r) => r.g === gi).length);
+const summary = `${title}. ${rows.length} points. ` + groups.map((g, gi) => `${counts[gi]} ${g.label.toLowerCase()}`).join(', ') + `. Range ${fmt(yMinRaw)} to ${fmt(yMaxRaw)}.`;
+---
+
+<figure class="point-chart">
+  <div class="legend" aria-hidden="true">
+    {
+      groups.map((g, gi) => (
+        <span>
+          <i style={`background: var(--${g.color})`} />
+          {g.label} ({counts[gi]})
+        </span>
+      ))
+    }
+    {
+      reference && (
+        <span>
+          <b class="dash" />
+          {reference.label}
+        </span>
+      )
+    }
+  </div>
+  {
+    views.map((v, vi) => (
+      <div class={`plot ${v.cls}`} data-points={JSON.stringify(v.points.map((p) => [p.cx, p.cy, p.label]))}>
+        <svg viewBox={`0 0 ${v.W} ${v.H}`} role="img" aria-label={summary} aria-hidden={vi === 1 ? 'true' : undefined}>
+          {yTicks.map((t) => (
+            <g>
+              <line class="grid" x1={v.m.l} x2={v.W - v.m.r} y1={v.sy(t)} y2={v.sy(t)} />
+              <text class="tick" x={v.m.l - 8} y={v.sy(t) + 4} text-anchor="end">
+                {fmt(t)}
+              </text>
+            </g>
+          ))}
+          {v.xTicks.map((t) => (
+            <text class="tick" x={v.sx(t)} y={v.H - 22} text-anchor="middle">
+              {t}
+            </text>
+          ))}
+          {xLabel && (
+            <text class="axis" x={v.m.l + v.iw / 2} y={v.H - 4} text-anchor="middle">
+              {xLabel}
+            </text>
+          )}
+          {reference && <line class="ref" x1={v.m.l} x2={v.W - v.m.r} y1={v.sy(reference.value)} y2={v.sy(reference.value)} />}
+          {v.points.map((p) => (
+            <circle cx={p.cx} cy={p.cy} r={p.r} style={`fill: var(--${groups[p.g].color})`} class="pt" />
+          ))}
+          <circle class="hl" r="7" cx="-20" cy="-20" />
+        </svg>
+        <div class="tip" role="status" aria-live="polite" hidden />
+      </div>
+    ))
+  }
+  {caption && <figcaption>{caption}</figcaption>}
+  <details>
+    <summary>Show the data as a table</summary>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">{xLabel ?? 'x'}</th><th scope="col">Value</th><th scope="col">Group</th></tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => <tr><td>{r.x}</td><td>{fmt(r.y)}</td><td>{groups[r.g].label}</td></tr>)}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</figure>
+
+<style>
+  .point-chart {
+    margin-block: 1.75rem;
+    background: var(--soft);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1rem 1rem 0.75rem;
+    counter-increment: figure;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    font: 0.78rem var(--font-mono);
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .legend i {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    margin-right: 0.45rem;
+    vertical-align: 0;
+  }
+  .legend .dash {
+    display: inline-block;
+    width: 18px;
+    border-top: 1.5px dashed var(--muted);
+    margin-right: 0.45rem;
+    vertical-align: 0.25em;
+  }
+  .plot {
+    position: relative;
+  }
+  .plot.narrow {
+    display: none;
+  }
+  @media (max-width: 560px) {
+    .plot.wide {
+      display: none;
+    }
+    .plot.narrow {
+      display: block;
+    }
+  }
+  svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    font-family: var(--font-mono);
+    touch-action: pan-y;
+  }
+  .grid {
+    stroke: var(--rule);
+    stroke-width: 1;
+  }
+  .tick {
+    fill: var(--muted);
+    font-size: 12px;
+  }
+  .axis {
+    fill: var(--muted);
+    font-size: 11px;
+  }
+  .ref {
+    stroke: var(--muted);
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+  }
+  .ref-label {
+    fill: var(--ink);
+    font-size: 12px;
+    paint-order: stroke;
+    stroke: var(--panel);
+    stroke-width: 4px;
+  }
+  .pt {
+    stroke: var(--panel);
+    stroke-width: 1.5;
+  }
+  .hl {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2;
+    pointer-events: none;
+  }
+  .tip {
+    position: absolute;
+    pointer-events: none;
+    transform: translate(-50%, calc(-100% - 12px));
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+    font: 0.78rem var(--font-mono);
+    color: var(--ink);
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.25);
+  }
+  figcaption {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+  figcaption::before {
+    content: 'Figure ' counter(figure) '. ';
+    font-weight: 600;
+    color: var(--ink);
+  }
+  details {
+    margin-top: 0.5rem;
+    font: 0.8rem var(--font-mono);
+    color: var(--muted);
+  }
+  summary {
+    cursor: pointer;
+    padding: 0.25rem 0;
+  }
+  .table-wrap {
+    max-height: 18rem;
+    overflow: auto;
+    margin-top: 0.4rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 0.2rem 0.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  th {
+    position: sticky;
+    top: 0;
+    background: var(--panel);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.point-chart .plot').forEach((plot) => {
+    const pts = JSON.parse(plot.dataset.points ?? '[]') as [number, number, string][];
+    const svg = plot.querySelector('svg')!;
+    const hl = plot.querySelector<SVGCircleElement>('.hl')!;
+    const tip = plot.querySelector<HTMLElement>('.tip')!;
+    const vb = svg.viewBox.baseVal;
+    function show(e: PointerEvent) {
+      const b = svg.getBoundingClientRect();
+      const k = vb.width / b.width;
+      const px = (e.clientX - b.left) * k;
+      const py = (e.clientY - b.top) * k;
+      let best = 0;
+      let bd = Infinity;
+      pts.forEach((p, i) => {
+        // Nearest by x, with a small pull toward y so outliers are easy to pick.
+        const d = Math.abs(p[0] - px) + Math.abs(p[1] - py) * 0.15;
+        if (d < bd) {
+          bd = d;
+          best = i;
+        }
+      });
+      const [cx, cy, label] = pts[best];
+      hl.setAttribute('cx', String(cx));
+      hl.setAttribute('cy', String(cy));
+      tip.hidden = false;
+      tip.textContent = label;
+      const half = tip.offsetWidth / 2;
+      tip.style.left = `${Math.min(Math.max(cx / k, half), b.width - half)}px`;
+      tip.style.top = `${cy / k}px`;
+    }
+    function hide() {
+      tip.hidden = true;
+      hl.setAttribute('cx', '-20');
+    }
+    svg.addEventListener('pointermove', show);
+    svg.addEventListener('pointerdown', show);
+    svg.addEventListener('pointerleave', hide);
+  });
+</script>

@@ -13,7 +13,12 @@ export function url(p = '/'): string {
 /** Published projects, newest first. Drafts show only in `npm run dev`. */
 export async function getProjects(): Promise<CollectionEntry<'projects'>[]> {
   const all = await getCollection('projects', ({ data }) => (import.meta.env.PROD ? !data.draft : true));
-  return all.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  return all.sort(
+    (a, b) =>
+      Number(a.data.draft) - Number(b.data.draft) ||
+      b.data.date.valueOf() - a.data.date.valueOf() ||
+      a.data.title.localeCompare(b.data.title),
+  );
 }
 
 export function formatDate(d: Date, style: 'long' | 'short' = 'long'): string {

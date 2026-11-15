@@ -1,0 +1,93 @@
+---
+// Before and after numbers for "What went wrong and what I optimized".
+// Usage in MDX:
+//   <BeforeAfter rows={[{ label: 'Worst slack at 100 MHz', before: '-6.263 ns', after: '+0.424 ns' }]} />
+// Before values are red and after values are green. Add `neutral: true` to a row to keep it uncolored.
+interface Row {
+  label: string;
+  before: string;
+  after: string;
+  neutral?: boolean;
+}
+interface Props {
+  rows: Row[];
+  caption?: string;
+}
+const { rows, caption } = Astro.props;
+---
+
+<div class="ba">
+  <table>
+    {caption && <caption>{caption}</caption>}
+    <thead>
+      <tr>
+        <th scope="col"><span class="sr-only">Measure</span></th>
+        <th scope="col" class="n">Before</th>
+        <th scope="col" class="n">After</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((r) => (
+          <tr>
+            <th scope="row">{r.label}</th>
+            <td class:list={['n', { 'c-red': !r.neutral }]}>{r.before}</td>
+            <td class:list={['n', { 'c-green': !r.neutral }]}>
+              {!r.neutral && (
+                <span class="arrow" aria-hidden="true">
+                  &rarr;{' '}
+                </span>
+              )}
+              {r.after}
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .ba {
+    margin-block: 1.5rem;
+    overflow-x: auto;
+  }
+  table {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--soft);
+    border-top: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+  }
+  caption {
+    text-align: left;
+    font: 0.8rem var(--font-mono);
+    color: var(--muted);
+    padding-bottom: 0.4rem;
+  }
+  th,
+  td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--rule);
+    text-align: left;
+  }
+  thead th {
+    font: 600 0.8125rem var(--font-mono);
+    border-bottom: 1px solid var(--ink);
+  }
+  tbody th {
+    font: 400 1rem/1.4 var(--font-serif);
+    white-space: normal;
+  }
+  .n {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .arrow {
+    color: var(--muted);
+    font-weight: 400;
+  }
+</style>

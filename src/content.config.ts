@@ -16,6 +16,8 @@ const projects = defineCollection({
       summary: z.string(),
       // One short line for the project card. Falls back to the summary.
       blurb: z.string().optional(),
+      // One line on how the headline numbers were measured. Shown under them.
+      measured: z.string().optional(),
       // Headline numbers. The FIRST one is the big number on the project card.
       stats: z
         .array(

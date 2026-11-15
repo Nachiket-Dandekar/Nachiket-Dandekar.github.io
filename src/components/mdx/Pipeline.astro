@@ -1,0 +1,98 @@
+---
+// A data path drawn as a vertical chain of blocks.
+// Usage in MDX:
+//   <Pipeline steps={[{ name: 'mii_rx', note: 'Builds bytes, checks CRC', color: 'blue' }, ...]} />
+interface Step {
+  name: string;
+  note?: string;
+  color?: 'blue' | 'red' | 'yellow' | 'green';
+}
+interface Props {
+  steps: Step[];
+  label?: string;
+}
+const { steps, label = 'Data path' } = Astro.props;
+---
+
+<figure class="pipeline">
+  <ol aria-label={label}>
+    {
+      steps.map((s) => (
+        <li style={`--c: var(--${s.color ?? 'blue'})`}>
+          <code>{s.name}</code>
+          {s.note && <span>{s.note}</span>}
+        </li>
+      ))
+    }
+  </ol>
+</figure>
+
+<style>
+  .pipeline {
+    margin-block: 1.75rem;
+  }
+  ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: relative;
+  }
+  li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: 0.25rem 1rem;
+    align-items: baseline;
+    padding: 0.6rem 0.9rem 0.6rem 2.1rem;
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--c);
+    border-radius: 8px;
+    background: var(--soft);
+  }
+  li + li {
+    margin-top: 1.1rem;
+  }
+  li + li::before {
+    content: '';
+    position: absolute;
+    left: 1.05rem;
+    top: -1.15rem;
+    height: 1.1rem;
+    border-left: 2px solid var(--rule);
+  }
+  li + li::after {
+    content: '';
+    position: absolute;
+    left: calc(1.05rem - 4px);
+    top: -0.35rem;
+    border: 5px solid transparent;
+    border-top-color: var(--muted);
+    border-bottom: 0;
+  }
+  li code {
+    font: 600 0.9rem var(--font-mono);
+    color: var(--c);
+    background: none;
+    border: 0;
+    padding: 0;
+  }
+  li code::before {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    top: 1.05rem;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--c);
+  }
+  li span {
+    font-size: 0.98rem;
+    color: var(--ink);
+  }
+  @media (max-width: 640px) {
+    li {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
