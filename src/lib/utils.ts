@@ -37,7 +37,7 @@ export function hasResume(): boolean {
 
 // Every file inside a project folder, as a built URL. Used for the "downloads" front matter.
 const projectFiles = import.meta.glob('/src/content/projects/*/*.{csv,pdf,zip,txt,json,xlsx,step,stl,kicad_pcb,kicad_sch}', {
-  query: '?url',
+  query: '?url&no-inline',
   import: 'default',
   eager: true,
 }) as Record<string, string>;

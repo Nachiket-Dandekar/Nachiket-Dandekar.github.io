@@ -1,0 +1,53 @@
+---
+title: Project title
+date: 2026-12-01
+tags: [FPGA] # any of: FPGA, PCB, embedded, software
+summary: >-
+  What it is, in two sentences. Keep it plain.
+measured: One line on how the numbers were measured. Delete this line if it does not apply.
+blurb: One short line for the project card.
+stats: # the FIRST one is the big number on the project card
+  - value: '42'
+    unit: ns
+    label: what this number means
+  - value: '3/3'
+    label: another result
+cover: ./cover.jpg
+coverAlt: Describe what the photo shows
+# youtube: VIDEO_ID # the part after watch?v= in the YouTube link
+# repo: https://github.com/nachiket-dandekar/repo-name
+# repoPublic: true # only when the repo is public
+# downloads:
+#   - label: Raw data (CSV)
+#     file: data.csv
+# links:
+#   - label: Datasheet
+#     href: https://example.com/datasheet.pdf
+# status: in progress
+featured: true
+draft: true # set to false to publish
+---
+
+import cover from './cover.jpg';
+
+## Why I built it
+
+Write this section.
+
+## How it works
+
+<Figure src={cover} alt="Describe the image" caption="One sentence about it." />
+
+## What went wrong and what I optimized
+
+<BeforeAfter rows={[{ label: 'Something you measured', before: '10 ms', after: '2 ms' }]} />
+
+## Results
+
+| Measure | Value |
+|---|---|
+| Something | 1.0 |
+
+## What I would do next
+
+- Next step.

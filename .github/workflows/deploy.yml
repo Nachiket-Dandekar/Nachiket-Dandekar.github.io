@@ -1,0 +1,45 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Build and deploy every push to main.
+  push:
+    branches: [main]
+  # Also allow a manual run from the Actions tab.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+      - name: Install, build and upload the site
+        uses: withastro/action@v6
+        env:
+          # The site URL is never hard-coded.
+          # Default: https://<owner>.github.io, with the repo name as the base path
+          # (or no base path if the repo is named <owner>.github.io).
+          # Custom domain later: add a repository variable SITE_URL, e.g. https://example.com
+          # (Settings > Secrets and variables > Actions > Variables). The base path then becomes "/".
+          SITE_URL: ${{ vars.SITE_URL || format('https://{0}.github.io', github.repository_owner) }}
+          BASE_PATH: ${{ vars.BASE_PATH || (vars.SITE_URL && '/') || (github.event.repository.name == format('{0}.github.io', github.repository_owner) && '/') || format('/{0}', github.event.repository.name) }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
