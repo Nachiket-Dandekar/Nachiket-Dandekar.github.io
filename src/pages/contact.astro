@@ -1,0 +1,121 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../site.config';
+
+const links = [
+  { label: 'Email', value: SITE.email, href: `mailto:${SITE.email}`, color: 'blue', copy: true },
+  { label: 'GitHub', value: SITE.github.replace('https://', ''), href: SITE.github, color: 'yellow' },
+  { label: 'LinkedIn', value: SITE.linkedin.replace('https://www.', ''), href: SITE.linkedin, color: 'green' },
+];
+---
+
+<BaseLayout title="Contact" description={`How to reach ${SITE.name}.`}>
+  <div class="wrap">
+    <header class="head">
+      <p class="label">Contact</p>
+      <h1>Get in touch</h1>
+      <p class="sub">Email is the best way to reach me. I'm happy to talk about any of my projects in more detail.</p>
+    </header>
+
+    <ul class="links">
+      {
+        links.map((l) => (
+          <li style={`--c: var(--${l.color})`}>
+            <span class="what label">{l.label}</span>
+            <a href={l.href} rel={l.label === 'Email' ? undefined : 'me'}>
+              {l.value}
+            </a>
+            {l.copy && (
+              <button type="button" class="copy" data-copy={l.value} hidden>
+                Copy
+              </button>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  .head {
+    padding: 3.5rem 0 2rem;
+  }
+  h1 {
+    font-size: 2.9rem;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    margin: 0.5rem 0 0.75rem;
+  }
+  .sub {
+    color: var(--muted);
+    max-width: 52ch;
+  }
+  .links {
+    border-top: 1px solid var(--ink);
+  }
+  .links li {
+    display: grid;
+    grid-template-columns: 7rem 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 0 1.1rem 1rem;
+    border-bottom: 1px solid var(--rule);
+    border-left: 3px solid var(--c);
+  }
+  .what {
+    color: var(--c);
+  }
+  .links a {
+    font: 500 1.05rem var(--font-mono);
+    color: var(--ink);
+    text-decoration-color: var(--c);
+    overflow-wrap: anywhere;
+  }
+  .copy {
+    font: 500 0.75rem var(--font-mono);
+    color: var(--ink);
+    background: var(--soft);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.25rem 0.8rem;
+    cursor: pointer;
+  }
+  .copy:hover {
+    border-color: var(--c);
+  }
+  @media (max-width: 720px) {
+    .head {
+      padding-top: 2rem;
+    }
+    h1 {
+      font-size: 2.1rem;
+    }
+    .links li {
+      grid-template-columns: 1fr auto;
+    }
+    .what {
+      grid-column: 1 / -1;
+    }
+    .links a {
+      font-size: 0.92rem;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) => {
+    if (!navigator.clipboard) return;
+    b.hidden = false;
+    b.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(b.dataset.copy ?? '');
+        b.textContent = 'Copied';
+        setTimeout(() => (b.textContent = 'Copy'), 1600);
+      } catch {
+        b.textContent = 'Copy failed';
+      }
+    });
+  });
+</script>

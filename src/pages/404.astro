@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { url } from '../lib/utils';
+---
+
+<BaseLayout title="Page not found">
+  <div class="wrap py-24">
+    <p class="label">Error 404</p>
+    <h1 class="mt-2 mb-4 text-5xl font-bold">Page not found</h1>
+    <p>That page does not exist. It may have moved.</p>
+    <p class="mt-6 font-mono text-sm">
+      <a href={url('/')}>Home</a>
+      <span class="text-muted"> / </span>
+      <a href={url('/projects/')}>Projects</a>
+    </p>
+  </div>
+</BaseLayout>

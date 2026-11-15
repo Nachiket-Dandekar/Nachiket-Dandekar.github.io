@@ -1,0 +1,127 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectRow from '../../components/ProjectRow.astro';
+import { TAGS, TAG_COLOR } from '../../site.config';
+import { getProjects } from '../../lib/utils';
+
+const projects = await getProjects();
+const counts = Object.fromEntries(TAGS.map((t) => [t, projects.filter((p) => p.data.tags.includes(t)).length]));
+---
+
+<BaseLayout title="Projects" description="Every project I've built, newest first, with the numbers I measured.">
+  <div class="wrap">
+    <header class="head">
+      <p class="label">Projects</p>
+      <h1>Things I've built</h1>
+      <p class="sub">Newest first. Each one has the numbers I measured and what went wrong along the way.</p>
+    </header>
+
+    <div class="filters" role="group" aria-label="Filter projects by tag" data-filters hidden>
+      <button type="button" data-tag="" aria-pressed="true">All <span>{projects.length}</span></button>
+      {
+        TAGS.map((t) => (
+          <button type="button" data-tag={t} aria-pressed="false" style={`--c: var(--${TAG_COLOR[t]})`} disabled={counts[t] === 0}>
+            {t} <span>{counts[t]}</span>
+          </button>
+        ))
+      }
+    </div>
+    <p class="status mono-sm" role="status" aria-live="polite" data-filter-status></p>
+
+    <div class="list" data-project-list>
+      {projects.map((p, i) => <ProjectRow project={p} priority={i === 0} />)}
+      {projects.length === 0 && <p class="mono-sm py-6">No projects yet.</p>}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .head {
+    padding: 3.5rem 0 1.5rem;
+  }
+  h1 {
+    font-size: 2.9rem;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    margin: 0.5rem 0 0.75rem;
+  }
+  .sub {
+    color: var(--muted);
+    max-width: 52ch;
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .filters button {
+    --c: var(--ink);
+    font: 500 0.8rem var(--font-mono);
+    color: var(--ink);
+    background: var(--soft);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.3rem 0.85rem;
+    cursor: pointer;
+  }
+  .filters button span {
+    color: var(--muted);
+    margin-left: 0.25rem;
+  }
+  .filters button:hover:not(:disabled) {
+    border-color: var(--c);
+  }
+  .filters button[aria-pressed='true'] {
+    border-color: var(--c);
+    color: var(--c);
+    background: color-mix(in srgb, var(--c) 14%, transparent);
+  }
+  .filters button:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .status {
+    min-height: 1.5em;
+    margin-bottom: 0.5rem;
+  }
+  .list {
+    border-top: 1px solid var(--ink);
+  }
+  @media (max-width: 720px) {
+    .head {
+      padding-top: 2rem;
+    }
+    h1 {
+      font-size: 2.1rem;
+    }
+  }
+</style>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-filters]');
+  const status = document.querySelector<HTMLElement>('[data-filter-status]');
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-project-list] .row')];
+  if (bar) {
+    bar.hidden = false;
+    const buttons = [...bar.querySelectorAll<HTMLButtonElement>('button')];
+    const apply = (tag: string) => {
+      let shown = 0;
+      rows.forEach((r) => {
+        const match = !tag || (r.dataset.tags ?? '').split(',').includes(tag);
+        r.hidden = !match;
+        if (match) shown++;
+      });
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.tag ?? '') === tag)));
+      if (status) status.textContent = tag ? `${shown} ${shown === 1 ? 'project' : 'projects'} tagged ${tag}` : '';
+      const u = new URL(location.href);
+      if (tag) u.searchParams.set('tag', tag);
+      else u.searchParams.delete('tag');
+      history.replaceState(null, '', u);
+    };
+    buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.tag ?? '')));
+    const initial = new URL(location.href).searchParams.get('tag') ?? '';
+    if (initial && buttons.some((b) => b.dataset.tag === initial)) apply(initial);
+  }
+</script>
