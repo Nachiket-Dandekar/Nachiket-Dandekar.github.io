@@ -1,0 +1,326 @@
+---
+// Line chart drawn at build time from a CSV file in the project folder.
+// Usage in MDX:
+//   import run from './run.csv?raw';
+//   <LineChart csv={run} x="time_s" xLabel="time (s)" unit="m" title="..."
+//     series={[
+//       { y: 'true_position_m', label: 'True position', style: 'dash', color: 'ink' },
+//       { y: 'sensor_reading_m', label: 'Sensor reading', style: 'dots', color: 'red' },
+//       { y: 'kalman_estimate_m', label: 'Kalman estimate', style: 'line', color: 'green' },
+//     ]} />
+// Colors follow the site rule: ink is neutral, red is a problem, green is a fix.
+type Color = 'ink' | 'red' | 'green';
+interface Series {
+  y: string;
+  label: string;
+  style: 'line' | 'dash' | 'dots';
+  color: Color;
+}
+interface Props {
+  csv: string;
+  x: string;
+  series: Series[];
+  title: string;
+  xLabel?: string;
+  unit?: string;
+  caption?: string;
+}
+const { csv, x, series, title, xLabel, unit = '', caption } = Astro.props;
+
+const lines = csv.trim().split(/\r?\n/);
+const header = lines[0].split(',').map((h) => h.trim());
+const col = (name: string) => {
+  const i = header.indexOf(name);
+  if (i < 0) throw new Error(`LineChart: column "${name}" not found in CSV (${header.join(', ')})`);
+  return i;
+};
+const xi = col(x);
+const yis = series.map((s) => col(s.y));
+const rows = lines.slice(1).map((l) => l.split(',').map(Number));
+const xs = rows.map((r) => r[xi]);
+const all = rows.flatMap((r) => yis.map((i) => r[i]));
+const xMin = Math.min(...xs);
+const xMax = Math.max(...xs);
+const step = (range: number) => {
+  const raw = range / 5;
+  const p = Math.pow(10, Math.floor(Math.log10(raw)));
+  return [1, 2, 5, 10].map((m) => m * p).find((s) => s >= raw) ?? raw;
+};
+const yStep = step(Math.max(...all) - Math.min(...all));
+const yLo = Math.floor(Math.min(...all) / yStep) * yStep;
+const yHi = Math.ceil(Math.max(...all) / yStep) * yStep;
+const yTicks: number[] = [];
+for (let t = yLo; t <= yHi + 1e-9; t += yStep) yTicks.push(+t.toFixed(6));
+const fmt = (v: number) => `${+v.toFixed(2)}${unit ? ` ${unit}` : ''}`;
+const varOf = (c: Color) => (c === 'ink' ? 'var(--ink)' : `var(--${c})`);
+
+function layout(W: number, H: number, xTickCount: number) {
+  const m = { l: 52, r: 14, t: 12, b: 44 };
+  const iw = W - m.l - m.r;
+  const ih = H - m.t - m.b;
+  const sx = (v: number) => m.l + ((v - xMin) / (xMax - xMin || 1)) * iw;
+  const sy = (v: number) => m.t + ih - ((v - yLo) / (yHi - yLo || 1)) * ih;
+  const xTicks = Array.from({ length: xTickCount }, (_, i) => +(xMin + ((xMax - xMin) * i) / (xTickCount - 1)).toFixed(2));
+  const paths = series.map((s, si) => rows.map((r, i) => `${i ? 'L' : 'M'}${sx(r[xi]).toFixed(1)},${sy(r[yis[si]]).toFixed(1)}`).join(''));
+  const dots = series.map((s, si) => rows.map((r) => [+sx(r[xi]).toFixed(1), +sy(r[yis[si]]).toFixed(1)]));
+  return { W, H, m, iw, sx, sy, xTicks, paths, dots };
+}
+const views = [
+  { cls: 'wide', ...layout(720, 330, 6) },
+  { cls: 'narrow', ...layout(360, 300, 5) },
+];
+// For the hover readout: x pixel per row and the label text.
+const readout = rows.map((r) => `${xLabel ?? x} ${r[xi]}: ` + series.map((s, si) => `${s.label.toLowerCase()} ${fmt(r[yis[si]])}`).join(', '));
+const summary = `${title}. ` + series.map((s) => s.label).join(', ') + ` over ${xLabel ?? x} from ${xMin} to ${xMax}.`;
+---
+
+<figure class="line-chart">
+  <div class="legend" aria-hidden="true">
+    {
+      series.map((s) => (
+        <span>
+          <b class={`key ${s.style}`} style={`--c: ${varOf(s.color)}`} />
+          {s.label}
+        </span>
+      ))
+    }
+  </div>
+  {
+    views.map((v, vi) => (
+      <div class={`plot ${v.cls}`} data-xs={JSON.stringify(rows.map((r) => +v.sx(r[xi]).toFixed(1)))} data-labels={JSON.stringify(readout)}>
+        <svg viewBox={`0 0 ${v.W} ${v.H}`} role="img" aria-label={summary} aria-hidden={vi === 1 ? 'true' : undefined}>
+          {yTicks.map((t) => (
+            <g>
+              <line class="grid" x1={v.m.l} x2={v.W - v.m.r} y1={v.sy(t)} y2={v.sy(t)} />
+              <text class="tick" x={v.m.l - 8} y={v.sy(t) + 4} text-anchor="end">
+                {t}
+              </text>
+            </g>
+          ))}
+          {v.xTicks.map((t) => (
+            <text class="tick" x={v.sx(t)} y={v.H - 22} text-anchor="middle">
+              {t}
+            </text>
+          ))}
+          {xLabel && (
+            <text class="axis" x={v.m.l + v.iw / 2} y={v.H - 4} text-anchor="middle">
+              {xLabel}
+            </text>
+          )}
+          {series.map((s, si) =>
+            s.style === 'dots' ? (
+              <g style={`fill: ${varOf(s.color)}`}>
+                {v.dots[si].map(([cx, cy]) => (
+                  <circle cx={cx} cy={cy} r={v.cls === 'wide' ? 2.6 : 2} />
+                ))}
+              </g>
+            ) : (
+              <path d={v.paths[si]} class={s.style} style={`stroke: ${varOf(s.color)}`} />
+            ),
+          )}
+          <line class="cursor" x1="-10" x2="-10" y1={v.m.t} y2={v.H - v.m.b} />
+        </svg>
+        <div class="tip" role="status" aria-live="polite" hidden />
+      </div>
+    ))
+  }
+  {caption && <figcaption>{caption}</figcaption>}
+  <details>
+    <summary>Show the data as a table</summary>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">{xLabel ?? x}</th>
+            {series.map((s) => <th scope="col">{s.label}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {
+            rows.map((r) => (
+              <tr>
+                <td>{r[xi]}</td>
+                {yis.map((i) => (
+                  <td>{fmt(r[i])}</td>
+                ))}
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </details>
+</figure>
+
+<style>
+  .line-chart {
+    margin-block: 1.75rem;
+    background: var(--soft);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1rem 1rem 0.75rem;
+    counter-increment: figure;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    font: 0.78rem var(--font-mono);
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .key {
+    display: inline-block;
+    width: 18px;
+    margin-right: 0.45rem;
+    vertical-align: 0.25em;
+    border-top: 2px solid var(--c);
+  }
+  .key.dash {
+    border-top-style: dashed;
+  }
+  .key.dots {
+    width: 8px;
+    height: 8px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--c);
+    vertical-align: 0;
+  }
+  .plot {
+    position: relative;
+  }
+  .plot.narrow {
+    display: none;
+  }
+  @media (max-width: 560px) {
+    .plot.wide {
+      display: none;
+    }
+    .plot.narrow {
+      display: block;
+    }
+  }
+  svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    font-family: var(--font-mono);
+    touch-action: pan-y;
+  }
+  .grid {
+    stroke: var(--rule);
+  }
+  .tick {
+    fill: var(--muted);
+    font-size: 12px;
+  }
+  .axis {
+    fill: var(--muted);
+    font-size: 11px;
+  }
+  path {
+    fill: none;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  path.dash {
+    stroke-width: 1.5;
+    stroke-dasharray: 5 5;
+  }
+  path.line {
+    stroke-width: 2.5;
+  }
+  .cursor {
+    stroke: var(--muted);
+    stroke-width: 1;
+    pointer-events: none;
+  }
+  .tip {
+    position: absolute;
+    top: 0;
+    pointer-events: none;
+    transform: translateX(-50%);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+    font: 0.75rem var(--font-mono);
+    color: var(--ink);
+    max-width: 90%;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.25);
+  }
+  figcaption {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+  figcaption::before {
+    content: 'Figure ' counter(figure) '. ';
+    font-weight: 600;
+    color: var(--ink);
+  }
+  details {
+    margin-top: 0.5rem;
+    font: 0.8rem var(--font-mono);
+    color: var(--muted);
+  }
+  summary {
+    cursor: pointer;
+    padding: 0.25rem 0;
+  }
+  .table-wrap {
+    max-height: 18rem;
+    overflow: auto;
+    margin-top: 0.4rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 0.2rem 0.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  th {
+    position: sticky;
+    top: 0;
+    background: var(--panel);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.line-chart .plot').forEach((plot) => {
+    const xs = JSON.parse(plot.dataset.xs ?? '[]') as number[];
+    const labels = JSON.parse(plot.dataset.labels ?? '[]') as string[];
+    const svg = plot.querySelector('svg')!;
+    const cursor = plot.querySelector<SVGLineElement>('.cursor')!;
+    const tip = plot.querySelector<HTMLElement>('.tip')!;
+    const vb = svg.viewBox.baseVal;
+    function show(e: PointerEvent) {
+      const b = svg.getBoundingClientRect();
+      const k = vb.width / b.width;
+      const px = (e.clientX - b.left) * k;
+      let best = 0;
+      xs.forEach((x, i) => {
+        if (Math.abs(x - px) < Math.abs(xs[best] - px)) best = i;
+      });
+      cursor.setAttribute('x1', String(xs[best]));
+      cursor.setAttribute('x2', String(xs[best]));
+      tip.hidden = false;
+      tip.textContent = labels[best];
+      const half = tip.offsetWidth / 2;
+      tip.style.left = `${Math.min(Math.max(xs[best] / k, half), b.width - half)}px`;
+    }
+    svg.addEventListener('pointermove', show);
+    svg.addEventListener('pointerdown', show);
+    svg.addEventListener('pointerleave', () => {
+      tip.hidden = true;
+      cursor.setAttribute('x1', '-10');
+      cursor.setAttribute('x2', '-10');
+    });
+  });
+</script>

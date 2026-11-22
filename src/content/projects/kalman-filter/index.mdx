@@ -1,33 +1,111 @@
 ---
 # Draft: hidden on the live site until you set draft to false.
+# Written from kalman.m only. The paper and the Python version were not found yet.
+# The numbers come from re-running the same filter in Python (see "Results"). Check them before publishing.
 title: Kalman filter state estimation
-date: 2026-11-15 # TODO: set the real date of the class project
+date: 2026-05-12 # TODO: the date of the class project. This is the date kalman.m was last saved.
 tags: [software]
-summary: 'TODO: two sentences. A class project in MATLAB and Python. What state did you estimate, and from what measurements?'
-blurb: 'TODO: one line for the project card.'
+summary: >-
+  A Kalman filter in MATLAB that tracks a robot's position along a line from noisy sensor readings. Each step it
+  predicts where the robot should be from a simple physics model, then corrects that guess with the newest reading.
+measured: Averages over 200 simulated runs of the filter, 10 seconds each, with a new set of random sensor noise every run.
+blurb: Tracking a robot's position from noisy sensor readings.
 stats:
-  - value: 'TODO'
-    label: 'TODO: the headline number, for example the error before and after filtering'
+  - value: '1.25'
+    unit: m
+    label: average position error of the filter estimate
+  - value: '3.12'
+    unit: m
+    label: average position error of the raw sensor readings
+  - value: '2.5x'
+    label: closer to the true position than the raw readings (median)
+fix:
+  label: Average position error
+  before: '3.12 m raw'
+  after: '1.25 m filtered'
 featured: true
 draft: true
 ---
 
+import run from './kalman_run.csv?raw';
+
 ## Why I built it
 
-TODO: the class, and what you wanted to learn.
+I made this for a class presentation on state estimation. TODO: the class name, and one or two sentences on why you picked the Kalman filter.
 
 ## How it works
 
-TODO: the model, the measurements, plots, a short code snippet.
+The filter tracks two numbers: the robot's position and its velocity. It never sees the velocity directly. It only gets a position reading from the sensor every 0.1 seconds, and that reading is noisy.
+
+Each step has two parts.
+
+1. **Predict.** Use physics to guess the next state. The model says the new position is the old position plus velocity times 0.1 s, and the velocity stays the same. The filter also grows its uncertainty a little, because the real robot can do things the model does not expect.
+2. **Update.** Compare the prediction with the new sensor reading. The Kalman gain decides how much to trust each one. When the filter is unsure of its prediction, it leans on the sensor. When the sensor is noisy, it leans on the prediction.
+
+| Matrix | Value | What it means |
+|---|---|---|
+| `A` | `[1 0.1; 0 1]` | Physics: position moves by velocity times 0.1 s |
+| `H` | `[1 0]` | The sensor measures position only |
+| `Q` | `[0.1 0; 0 0.1]` | Process noise: how much the robot can surprise the model |
+| `R` | `10` | Sensor noise variance (a standard deviation of about 3.2 m) |
+| `P` | `[1 0; 0 1]` | Starting uncertainty |
+
+This is the loop from my MATLAB script:
+
+```matlab
+for i = 1:length(time)
+    % Predict
+    x_pred = A * x;
+    P_pred = A * P * A' + Q;
+
+    % Update
+    K = P_pred * H' / (H * P_pred * H' + R);
+    x = x_pred + K * (noisy_data(i) - H * x_pred);
+    P = (eye(2) - K * H) * P_pred;
+
+    filtered_estimate(i) = x(1);
+end
+```
+
+To test it, the script simulates a robot that starts at rest and speeds up at 1 m/s² for 10 seconds, so its true position is 0.5t². The sensor readings are that true position plus random Gaussian noise with a variance of 10.
+
+TODO: describe the Python version, or remove "and Python" from the card if it was MATLAB only.
 
 ## What went wrong and what I optimized
 
-TODO: problems and fixes, with before and after numbers.
+The filter's estimate runs a little behind the true position. The model assumes the velocity stays the same, but the simulated robot keeps speeding up, so the filter is always catching up. In the last 3 seconds of the run below, the estimate is about 1.1 m behind on average. Across 200 runs it is about 1.0 m behind.
+
+<BeforeAfter
+  rows={[
+    { label: 'Average position error, 200 runs', before: '3.12 m raw', after: '1.25 m filtered' },
+  ]}
+/>
+
+TODO: what you changed or tuned while building it, for example the values of Q and R, and what happened.
 
 ## Results
 
-TODO: tables and charts.
+<LineChart
+  csv={run}
+  x="time_s"
+  xLabel="time (s)"
+  unit="m"
+  title="True position, sensor readings and Kalman estimate over 10 seconds"
+  series={[
+    { y: 'true_position_m', label: 'True position', style: 'dash', color: 'ink' },
+    { y: 'sensor_reading_m', label: 'Sensor reading', style: 'dots', color: 'red' },
+    { y: 'kalman_estimate_m', label: 'Kalman estimate', style: 'line', color: 'green' },
+  ]}
+  caption="One run of the filter. The red dots are the noisy sensor readings and the green line is the filter's estimate. Hover or tap to read the values."
+/>
+
+The chart is one run of the same filter, run again in Python with a fixed random seed so it does not change each time the site builds. In this run the raw readings were off by 2.70 m on average (root mean square) and the filter estimate by 1.24 m.
+
+| Measure | Raw sensor readings | Kalman estimate |
+|---|---|---|
+| Average position error, the run above | 2.70 m | 1.24 m |
+| Average position error, 200 runs | 3.12 m | 1.25 m |
 
 ## What I would do next
 
-TODO: next steps.
+TODO: next steps. {/* One option: add acceleration to the state so the model matches a robot that speeds up, which should remove the lag. */}

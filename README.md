@@ -1,4 +1,4 @@
-# Nacho Dandekar, personal site
+# Nachiket Dandekar, personal site
 
 My projects and the numbers I measured. Static site built with Astro, MDX and Tailwind. No backend, no database, no trackers.
 

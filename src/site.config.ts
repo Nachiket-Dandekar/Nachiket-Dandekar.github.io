@@ -2,9 +2,8 @@
 // Do not add a phone number or home address here.
 export const SITE = {
   name: 'Nachiket Dandekar',
-  shortName: 'Nacho Dandekar',
-  nickname: 'Nacho',
-  title: 'Nacho Dandekar',
+  shortName: 'Nachiket Dandekar',
+  title: 'Nachiket Dandekar',
   description:
     'Electrical engineering student at UTSA. FPGA, low-latency systems and chip design projects, with the numbers I measured.',
   email: 'nachitrex@gmail.com',
