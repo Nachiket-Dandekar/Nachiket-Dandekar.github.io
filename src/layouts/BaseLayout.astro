@@ -5,8 +5,7 @@ import type { ImageMetadata } from 'astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import DotField from '../components/DotField.astro';
-import LookSwitcher from '../components/LookSwitcher.astro';
-import { SITE, LOOK } from '../site.config';
+import { SITE } from '../site.config';
 import { url } from '../lib/utils';
 
 interface Props {
@@ -22,7 +21,7 @@ const ogImage = image ? new URL((await getImage({ src: image, width: 1200, forma
 ---
 
 <!doctype html>
-<html lang="en" data-look={LOOK}>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -31,7 +30,7 @@ const ogImage = image ? new URL((await getImage({ src: image, width: 1200, forma
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
     <link rel="sitemap" href={url('/sitemap-index.xml')} />
-    <meta name="theme-color" content="#0b0d10" />
+    <meta name="theme-color" content="#0d1626" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
@@ -45,15 +44,6 @@ const ogImage = image ? new URL((await getImage({ src: image, width: 1200, forma
         if (localStorage.getItem('theme') === 'light') document.documentElement.dataset.theme = 'light';
       } catch (e) {}
     </script>
-    <script is:inline define:vars={{ devLooks: import.meta.env.DEV }}>
-      // In `npm run dev` only: use the look picked in the switcher (or ?look=topic in the URL).
-      if (devLooks) {
-        try {
-          var look = new URLSearchParams(location.search).get('look') || localStorage.getItem('look');
-          if (look) document.documentElement.dataset.look = look;
-        } catch (e) {}
-      }
-    </script>
   </head>
   <body>
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded focus:bg-bg focus:px-3 focus:py-2 focus:font-mono focus:text-sm">Skip to content</a>
@@ -63,6 +53,5 @@ const ogImage = image ? new URL((await getImage({ src: image, width: 1200, forma
       <slot />
     </main>
     <Footer />
-    {import.meta.env.DEV && <LookSwitcher />}
   </body>
 </html>

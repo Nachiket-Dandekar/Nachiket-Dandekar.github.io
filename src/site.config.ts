@@ -17,8 +17,6 @@ export const SITE = {
 // Tags used to filter projects.
 export const TAGS = ['FPGA', 'ASIC', 'PCB', 'embedded', 'software'] as const;
 export type Tag = (typeof TAGS)[number];
-/** CSS color variable for a topic, e.g. var(--t-fpga). Used by the "topic" look. */
+/** CSS color variable for a topic, e.g. var(--t-fpga). Used for the dots in "Working on now". */
 export const topicVar = (t: Tag) => `var(--t-${t.toLowerCase()})`;
 
-// Color look for the whole site: 'current' | 'topic' | 'bold' | 'navy'. See src/styles/global.css.
-export const LOOK: 'current' | 'topic' | 'bold' | 'navy' = 'current';

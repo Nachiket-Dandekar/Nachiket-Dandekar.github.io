@@ -145,7 +145,7 @@
       ripples.push({ x: e.clientX, y: e.clientY, r: 0, s: 1 });
     });
     document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
-    new MutationObserver(setup).observe(root, { attributes: true, attributeFilter: ['data-theme', 'data-look'] });
+    new MutationObserver(setup).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
 
     setup();
     start();

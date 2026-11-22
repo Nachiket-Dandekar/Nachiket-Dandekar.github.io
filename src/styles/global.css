@@ -7,65 +7,13 @@
 /* Dark is the default. Light applies only when <html data-theme="light">. */
 @custom-variant light (&:where([data-theme=light], [data-theme=light] *));
 
-/* Color rule: everything is black, white or gray, except
-   blue   = something you can click (links, buttons)
+/* Color rule: the site is navy, white and blue-gray, except
    red    = a problem, or a "before" number
    green  = a fix, or an "after" number
-   yellow = something I'm working on now */
+   topic colors (the dots in "Working on now"):
+     teal = FPGA, purple = ASIC, orange = PCB, pink = embedded, fuchsia = software
+   Links are white and underlined. */
 :root {
-  --bg: #0b0d10;
-  --ink: #f3f2ee;
-  --muted: #a3a8b0;
-  --rule: #23272e;
-  --soft: rgb(20 23 28 / 0.84);
-  --panel: #12151a;
-  --dot: #aab3c0;
-  --blue: #4d8dff;
-  --red: #f0524f;
-  --yellow: #ffcc33;
-  --green: #36d17c;
-  color-scheme: dark;
-}
-:root[data-theme='light'] {
-  --bg: #fafaf7;
-  --ink: #16181c;
-  --muted: #575c64;
-  --rule: #e0dfda;
-  --soft: rgb(241 240 235 / 0.86);
-  --panel: #f1f0eb;
-  --dot: #3c434d;
-  --blue: #1a5fd6;
-  --red: #d02f2f;
-  --yellow: #946500;
-  --green: #127a3c;
-  color-scheme: light;
-}
-
-/* ---------- Looks ----------
-   Pick one in src/site.config.ts (LOOK). In `npm run dev` a switcher at the bottom left lets you compare them.
-   current: the color rule above.
-   topic:   each project topic has its own color, used on its tags, numbers and dots. Links are white and underlined.
-   bold:    the same four meanings as current, used more boldly (filled buttons, a yellow "now" panel).
-   navy:    the same rule as current, on deep navy instead of black. */
-:root {
-  --link: var(--blue);
-  --t-fpga: #4d8dff;
-  --t-asic: #a78bfa;
-  --t-pcb: #f59e5b;
-  --t-embedded: #f472b6;
-  --t-software: #2dd4bf;
-}
-:root[data-theme='light'] {
-  --t-fpga: #1a5fd6;
-  --t-asic: #6d4fd8;
-  --t-pcb: #b45309;
-  --t-embedded: #be185d;
-  --t-software: #0f766e;
-}
-:root[data-look='topic'] {
-  --link: var(--ink);
-}
-:root[data-look='navy'] {
   --bg: #0d1626;
   --ink: #eef2fb;
   --muted: #9fb0cc;
@@ -73,8 +21,17 @@
   --soft: rgb(19 32 58 / 0.85);
   --panel: #13203a;
   --dot: #8fa6cc;
+  --red: #f0524f;
+  --green: #36d17c;
+  --link: var(--ink);
+  --t-fpga: #2dd4bf;
+  --t-asic: #a78bfa;
+  --t-pcb: #f59e5b;
+  --t-embedded: #f472b6;
+  --t-software: #e879f9;
+  color-scheme: dark;
 }
-:root[data-look='navy'][data-theme='light'] {
+:root[data-theme='light'] {
   --bg: #f4f7fc;
   --ink: #0f1a2e;
   --muted: #4a5873;
@@ -82,6 +39,14 @@
   --soft: rgb(232 238 248 / 0.88);
   --panel: #e8eef8;
   --dot: #3a4a66;
+  --red: #d02f2f;
+  --green: #127a3c;
+  --t-fpga: #0f766e;
+  --t-asic: #6d4fd8;
+  --t-pcb: #b45309;
+  --t-embedded: #be185d;
+  --t-software: #a21caf;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -91,9 +56,7 @@
   --color-rule: var(--rule);
   --color-soft: var(--soft);
   --color-panel: var(--panel);
-  --color-blue: var(--blue);
   --color-red: var(--red);
-  --color-yellow: var(--yellow);
   --color-green: var(--green);
   --font-serif: 'Source Serif 4 Variable', Georgia, serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -161,9 +124,7 @@
     font: 400 0.8125rem/1.5 var(--font-mono);
     color: var(--muted);
   }
-  .c-blue { color: var(--blue); }
   .c-red { color: var(--red); }
-  .c-yellow { color: var(--yellow); }
   .c-green { color: var(--green); }
 
   /* Highlight TODO markers so they are easy to find before publishing. */

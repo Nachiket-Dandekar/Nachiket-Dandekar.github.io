@@ -3,7 +3,6 @@ import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import Tag from './Tag.astro';
 import { url, formatDate } from '../lib/utils';
-import { topicVar } from '../site.config';
 
 interface Props {
   project: CollectionEntry<'projects'>;
@@ -15,7 +14,7 @@ const head = d.stats[0];
 const isTodo = (s?: string) => !!s && s.trim().startsWith('TODO');
 ---
 
-<a class="row" href={url(`/projects/${project.id}/`)} data-tags={d.tags.join(',')} style={`--tc: ${topicVar(d.tags[0])}`}>
+<a class="row" href={url(`/projects/${project.id}/`)} data-tags={d.tags.join(',')}>
   <div class="thumb">
     {
       d.cover ? (
@@ -150,35 +149,15 @@ const isTodo = (s?: string) => !!s && s.trim().startsWith('TODO');
     font: 0.75rem/1.4 var(--font-mono);
     color: var(--muted);
   }
-  /* The fix line shows only in the "bold" look. */
+  /* One fix from the project: red before, green after. */
   .fix {
-    display: none;
+    display: block;
     margin-top: 0.4rem;
     font: 500 0.8rem var(--font-mono);
     color: var(--muted);
   }
   .fix-arrow {
     color: var(--muted);
-  }
-  :global([data-look='bold']) .fix {
-    display: block;
-  }
-  :global([data-look='bold']) .row:hover::before {
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--link) 60%, transparent);
-  }
-  /* "topic" look: the project's topic color on its number and a bar on the left. */
-  :global([data-look='topic']) .value {
-    color: var(--tc);
-  }
-  :global([data-look='topic']) .row::after {
-    content: '';
-    position: absolute;
-    left: -0.9rem;
-    top: 1.4rem;
-    bottom: 1.4rem;
-    width: 3px;
-    border-radius: 2px;
-    background: var(--tc);
   }
   @media (max-width: 720px) {
     .row {

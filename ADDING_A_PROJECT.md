@@ -33,6 +33,7 @@ That's it. You never need to edit any other file.
 | `downloads` | no | Files in the project folder to offer, e.g. `{ label: 'Raw data (CSV)', file: data.csv }`. |
 | `links` | no | Other links, e.g. `{ label: 'Datasheet', href: 'https://...' }`. |
 | `status` | no | Short note on the card, e.g. `in progress`. |
+| `fix` | no | One fix shown on the card, red to green, e.g. `{ label: 'Worst timing slack at 100 MHz', before: '-6.263 ns', after: '+0.424 ns' }`. |
 | `featured` | no | `true` shows it on the home page. |
 | `draft` | no | `true` hides it on the live site. |
 
@@ -101,14 +102,15 @@ import data from './latency.csv?raw';
 
 ## Colors
 
-Colors on this site always mean the same thing. Everything else is black, white or gray.
+The site is navy, white and blue-gray. A few colors carry one meaning each:
 
 | Color | Meaning |
 |---|---|
-| Blue | Something you can click |
 | Red | A problem, or a "before" number |
 | Green | A fix, or an "after" number |
-| Yellow | Something I'm working on now |
+| Teal, purple, orange, pink, fuchsia | Topic dots in "Working on now": FPGA, ASIC, PCB, embedded, software |
+
+Links are white and underlined.
 
 In charts, use `color: 'ink'` (gray) for normal points and `color: 'red'` only for points that show a problem.
 
@@ -131,7 +133,8 @@ The "Working on now" list on the home page is separate from projects. Each item 
 ```md
 ---
 title: Custom FPGA board
-stage: Planning
+stage: Coming soon
+topic: PCB # sets the dot color: FPGA, ASIC, PCB, embedded or software
 order: 2
 # link: { label: The project, href: /projects/your-project-name/ }
 ---
