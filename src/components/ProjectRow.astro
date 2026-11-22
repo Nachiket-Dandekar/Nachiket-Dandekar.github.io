@@ -2,7 +2,6 @@
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import Tag from './Tag.astro';
-import { TAG_COLOR } from '../site.config';
 import { url, formatDate } from '../lib/utils';
 
 interface Props {
@@ -12,9 +11,7 @@ interface Props {
 const { project, priority = false } = Astro.props;
 const d = project.data;
 const head = d.stats[0];
-const color = TAG_COLOR[d.tags[0]];
 const isTodo = (s?: string) => !!s && s.trim().startsWith('TODO');
-const countable = head && /^\d+(\.\d+)?$/.test(head.value) ? head.value : undefined;
 ---
 
 <a class="row" href={url(`/projects/${project.id}/`)} data-tags={d.tags.join(',')}>
@@ -33,8 +30,7 @@ const countable = head && /^\d+(\.\d+)?$/.test(head.value) ? head.value : undefi
     <div class="meta">
       {d.tags.map((t) => <Tag tag={t} />)}
       <span class="mono-sm">{formatDate(d.date, 'short')}</span>
-      {d.status && <span class="mono-sm">{d.status}</span>}
-      {d.draft && <span class="draft">draft, hidden on the live site</span>}
+      {d.draft && <span class="mono-sm">draft, hidden on the live site</span>}
     </div>
     <h3>
       {d.title} <span class="arrow" aria-hidden="true">&rarr;</span>
@@ -43,9 +39,9 @@ const countable = head && /^\d+(\.\d+)?$/.test(head.value) ? head.value : undefi
   </div>
   {
     head && (
-      <div class={`num c-${color}`}>
+      <div class="num">
         <span class:list={['value', { todo: isTodo(head.value) }]}>
-          {countable ? <span data-count={countable}>{head.value}</span> : head.value}
+          {head.value}
           {head.unit && <span class="unit">{head.unit}</span>}
         </span>
         <small class:list={[{ todo: isTodo(head.label) }]}>{head.label}</small>
@@ -73,11 +69,9 @@ const countable = head && /^\d+(\.\d+)?$/.test(head.value) ? head.value : undefi
     inset: 0.25rem -1rem;
     z-index: -1;
     border-radius: 12px;
+    background: var(--soft);
     opacity: 0;
-    transition: opacity 0.25s;
-    background:
-      radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--blue) 14%, transparent), transparent 65%),
-      var(--soft);
+    transition: opacity 0.2s;
   }
   .row:hover::before,
   .row:focus-visible::before {
@@ -94,10 +88,6 @@ const countable = head && /^\d+(\.\d+)?$/.test(head.value) ? head.value : undefi
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
-  }
-  .row:hover .thumb :global(img) {
-    transform: scale(1.05);
   }
   .no-cover {
     width: 100%;
@@ -106,13 +96,6 @@ const countable = head && /^\d+(\.\d+)?$/.test(head.value) ? head.value : undefi
     place-items: center;
     font: 0.75rem var(--font-mono);
     color: var(--muted);
-    background-image: radial-gradient(var(--rule) 1.5px, transparent 1.5px);
-    background-size: 14px 14px;
-  }
-  .no-cover span {
-    background: var(--panel);
-    padding: 0.1rem 0.5rem;
-    border-radius: 4px;
   }
   .meta {
     display: flex;
@@ -120,10 +103,6 @@ const countable = head && /^\d+(\.\d+)?$/.test(head.value) ? head.value : undefi
     align-items: center;
     gap: 0.4rem 0.75rem;
     margin-bottom: 0.4rem;
-  }
-  .draft {
-    font: 0.75rem var(--font-mono);
-    color: var(--yellow);
   }
   h3 {
     font-size: 1.6rem;
@@ -134,10 +113,10 @@ const countable = head && /^\d+(\.\d+)?$/.test(head.value) ? head.value : undefi
   .arrow {
     display: inline-block;
     color: var(--blue);
-    transition: transform 0.25s;
+    transition: transform 0.2s;
   }
   .row:hover .arrow {
-    transform: translateX(5px);
+    transform: translateX(4px);
   }
   p {
     color: var(--muted);
@@ -150,10 +129,8 @@ const countable = head && /^\d+(\.\d+)?$/.test(head.value) ? head.value : undefi
   .value {
     display: block;
     font: 600 2.5rem/1 var(--font-mono);
+    color: var(--ink);
     white-space: nowrap;
-  }
-  :root:not([data-theme='light']) .value {
-    text-shadow: 0 0 26px color-mix(in srgb, currentColor 35%, transparent);
   }
   .unit {
     margin-left: 0.3em;
@@ -187,14 +164,3 @@ const countable = head && /^\d+(\.\d+)?$/.test(head.value) ? head.value : undefi
     }
   }
 </style>
-
-<script>
-  // Glow that follows the mouse over a project row.
-  document.querySelectorAll<HTMLElement>('a.row').forEach((r) =>
-    r.addEventListener('pointermove', (e) => {
-      const b = r.getBoundingClientRect();
-      r.style.setProperty('--mx', `${e.clientX - b.left}px`);
-      r.style.setProperty('--my', `${e.clientY - b.top}px`);
-    }),
-  );
-</script>

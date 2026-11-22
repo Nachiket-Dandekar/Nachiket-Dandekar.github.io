@@ -14,12 +14,6 @@ export const SITE = {
   resumeFile: 'resume.pdf',
 };
 
-// Tags used to filter projects. Each tag has one color, used everywhere it appears.
+// Tags used to filter projects.
 export const TAGS = ['FPGA', 'PCB', 'embedded', 'software'] as const;
 export type Tag = (typeof TAGS)[number];
-export const TAG_COLOR: Record<Tag, 'blue' | 'yellow' | 'green' | 'red'> = {
-  FPGA: 'blue',
-  PCB: 'yellow',
-  embedded: 'green',
-  software: 'red',
-};

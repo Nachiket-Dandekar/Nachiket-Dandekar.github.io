@@ -5,7 +5,6 @@ import type { ImageMetadata } from 'astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import DotField from '../components/DotField.astro';
-import Motion from '../components/Motion.astro';
 import { SITE } from '../site.config';
 import { url } from '../lib/utils';
 
@@ -54,6 +53,5 @@ const ogImage = image ? new URL((await getImage({ src: image, width: 1200, forma
       <slot />
     </main>
     <Footer />
-    <Motion />
   </body>
 </html>

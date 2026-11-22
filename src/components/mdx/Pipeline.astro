@@ -1,11 +1,12 @@
 ---
 // A data path drawn as a vertical chain of blocks.
 // Usage in MDX:
-//   <Pipeline steps={[{ name: 'mii_rx', note: 'Builds bytes, checks CRC', color: 'blue' }, ...]} />
+//   <Pipeline steps={[{ name: 'mii_rx', note: 'Builds bytes, checks CRC', group: 'Receive' }, ...]} />
+// `group` is optional. A small label is shown each time the group changes.
 interface Step {
   name: string;
   note?: string;
-  color?: 'blue' | 'red' | 'yellow' | 'green';
+  group?: string;
 }
 interface Props {
   steps: Step[];
@@ -17,10 +18,13 @@ const { steps, label = 'Data path' } = Astro.props;
 <figure class="pipeline">
   <ol aria-label={label}>
     {
-      steps.map((s) => (
-        <li style={`--c: var(--${s.color ?? 'blue'})`}>
-          <code>{s.name}</code>
-          {s.note && <span>{s.note}</span>}
+      steps.map((s, i) => (
+        <li>
+          {s.group && s.group !== steps[i - 1]?.group && <span class="group">{s.group}</span>}
+          <div class="block">
+            <code>{s.name}</code>
+            {s.note && <span>{s.note}</span>}
+          </div>
         </li>
       ))
     }
@@ -35,63 +39,55 @@ const { steps, label = 'Data path' } = Astro.props;
     list-style: none;
     padding: 0;
     margin: 0;
-    position: relative;
   }
-  li {
+  li + li {
+    margin-top: 0.9rem;
+  }
+  .group {
+    display: block;
+    font: 500 0.72rem var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 1.4rem 0 0.5rem;
+  }
+  li:first-child .group {
+    margin-top: 0;
+  }
+  .block {
     position: relative;
     display: grid;
     grid-template-columns: 11rem 1fr;
     gap: 0.25rem 1rem;
     align-items: baseline;
-    padding: 0.6rem 0.9rem 0.6rem 2.1rem;
+    padding: 0.6rem 0.9rem;
     border: 1px solid var(--rule);
-    border-left: 3px solid var(--c);
     border-radius: 8px;
     background: var(--soft);
   }
-  li + li {
-    margin-top: 1.1rem;
-  }
-  li + li::before {
+  li + li .block::before {
     content: '';
     position: absolute;
-    left: 1.05rem;
-    top: -1.15rem;
-    height: 1.1rem;
-    border-left: 2px solid var(--rule);
+    left: 1.4rem;
+    top: -0.95rem;
+    height: 0.9rem;
+    border-left: 1px solid var(--muted);
   }
-  li + li::after {
-    content: '';
-    position: absolute;
-    left: calc(1.05rem - 4px);
-    top: -0.35rem;
-    border: 5px solid transparent;
-    border-top-color: var(--muted);
-    border-bottom: 0;
+  li + li:has(.group) .block::before {
+    display: none;
   }
-  li code {
+  code {
     font: 600 0.9rem var(--font-mono);
-    color: var(--c);
+    color: var(--ink);
     background: none;
     border: 0;
     padding: 0;
   }
-  li code::before {
-    content: '';
-    position: absolute;
-    left: 0.75rem;
-    top: 1.05rem;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--c);
-  }
-  li span {
+  .block span {
     font-size: 0.98rem;
-    color: var(--ink);
   }
   @media (max-width: 640px) {
-    li {
+    .block {
       grid-template-columns: 1fr;
     }
   }

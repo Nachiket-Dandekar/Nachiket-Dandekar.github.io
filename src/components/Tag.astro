@@ -1,5 +1,5 @@
 ---
-import { TAG_COLOR, type Tag } from '../site.config';
+import type { Tag } from '../site.config';
 
 interface Props {
   tag: Tag;
@@ -7,13 +7,14 @@ interface Props {
 const { tag } = Astro.props;
 ---
 
-<span class={`tag c-${TAG_COLOR[tag]}`}>{tag}</span>
+<span class="tag">{tag}</span>
 
 <style>
   .tag {
     display: inline-block;
     font: 500 0.75rem/1.5 var(--font-mono);
-    border: 1px solid currentColor;
+    color: var(--muted);
+    border: 1px solid var(--rule);
     border-radius: 999px;
     padding: 0 0.55rem;
     white-space: nowrap;

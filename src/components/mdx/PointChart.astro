@@ -6,7 +6,8 @@
 //     title="Latency of each order" xLabel="order number"
 //     groups={[{ label: 'No wait', test: (v) => v <= 160, color: 'blue' }, { label: 'Waited', test: (v) => v > 160, color: 'red' }]}
 //     reference={{ value: 130, label: 'median 130 ns' }} />
-type Color = 'blue' | 'red' | 'yellow' | 'green';
+// 'ink' is neutral. Use red only for points that show a problem.
+type Color = 'ink' | 'blue' | 'red' | 'yellow' | 'green';
 interface Group {
   label: string;
   test: (v: number) => boolean;
@@ -30,7 +31,7 @@ interface Props {
 }
 
 const { csv, y, x, scale = 1, unit = '', log = false, title, xLabel, reference, caption } = Astro.props;
-const groups: Group[] = Astro.props.groups ?? [{ label: title, test: () => true, color: 'blue' }];
+const groups: Group[] = Astro.props.groups ?? [{ label: title, test: () => true, color: 'ink' }];
 
 // ---- parse ----
 const lines = csv.trim().split(/\r?\n/);
@@ -110,7 +111,7 @@ const summary = `${title}. ${rows.length} points. ` + groups.map((g, gi) => `${c
     {
       groups.map((g, gi) => (
         <span>
-          <i style={`background: var(--${g.color})`} />
+          <i style={`background: var(--${g.color === 'ink' ? 'muted' : g.color})`} />
           {g.label} ({counts[gi]})
         </span>
       ))
@@ -148,7 +149,7 @@ const summary = `${title}. ${rows.length} points. ` + groups.map((g, gi) => `${c
           )}
           {reference && <line class="ref" x1={v.m.l} x2={v.W - v.m.r} y1={v.sy(reference.value)} y2={v.sy(reference.value)} />}
           {v.points.map((p) => (
-            <circle cx={p.cx} cy={p.cy} r={p.r} style={`fill: var(--${groups[p.g].color})`} class="pt" />
+            <circle cx={p.cx} cy={p.cy} r={p.r} style={`fill: var(--${groups[p.g].color === 'ink' ? 'muted' : groups[p.g].color})`} class="pt" />
           ))}
           <circle class="hl" r="7" cx="-20" cy="-20" />
         </svg>

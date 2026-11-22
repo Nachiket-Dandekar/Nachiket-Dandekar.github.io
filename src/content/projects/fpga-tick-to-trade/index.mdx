@@ -53,20 +53,20 @@ A Raspberry Pi 5 replays a slice of a real Nasdaq ITCH 5.0 file to the board ove
   wide
 />
 
-Data flows through these modules in order. Blue is the receive path, yellow is the trading logic and green is the send path.
+Data flows through these modules in order.
 
 <Pipeline
   label="Tick-to-trade data path"
   steps={[
-    { name: 'mii_rx', note: 'Takes 4-bit nibbles from the Ethernet chip, builds bytes, checks the frame CRC', color: 'blue' },
-    { name: 'async_fifo', note: "Moves bytes from the Ethernet chip's 25 MHz clock to the 100 MHz system clock", color: 'blue' },
-    { name: 'udp_strip', note: 'Checks the Ethernet, IP and UDP headers, tracks MoldUDP64 sequence numbers, passes on the payload', color: 'blue' },
-    { name: 'sync_fifo', note: '4,096-byte buffer so the receiver never has to wait for the order book', color: 'blue' },
-    { name: 'itch_parser', note: 'Finds message boundaries and pulls out the fields of add, execute, cancel, delete and replace messages', color: 'yellow' },
-    { name: 'order_book', note: 'Order table (1,024 sets of 4) and 4,096 price levels per side in block RAM. Tracks best bid and best ask', color: 'yellow' },
-    { name: 'trigger', note: 'Fires a buy order when the best ask price changes and is at or below a limit', color: 'yellow' },
-    { name: 'order_tx', note: 'Queues orders and builds the Ethernet, IP and UDP frame. The payload is modeled on the Nasdaq OUCH Enter Order message', color: 'green' },
-    { name: 'mii_tx', note: 'Adds preamble and CRC and sends the frame to the Ethernet chip', color: 'green' },
+    { name: 'mii_rx', note: 'Takes 4-bit nibbles from the Ethernet chip, builds bytes, checks the frame CRC', group: 'Receive' },
+    { name: 'async_fifo', note: "Moves bytes from the Ethernet chip's 25 MHz clock to the 100 MHz system clock", group: 'Receive' },
+    { name: 'udp_strip', note: 'Checks the Ethernet, IP and UDP headers, tracks MoldUDP64 sequence numbers, passes on the payload', group: 'Receive' },
+    { name: 'sync_fifo', note: '4,096-byte buffer so the receiver never has to wait for the order book', group: 'Receive' },
+    { name: 'itch_parser', note: 'Finds message boundaries and pulls out the fields of add, execute, cancel, delete and replace messages', group: 'Trading logic' },
+    { name: 'order_book', note: 'Order table (1,024 sets of 4) and 4,096 price levels per side in block RAM. Tracks best bid and best ask', group: 'Trading logic' },
+    { name: 'trigger', note: 'Fires a buy order when the best ask price changes and is at or below a limit', group: 'Trading logic' },
+    { name: 'order_tx', note: 'Queues orders and builds the Ethernet, IP and UDP frame. The payload is modeled on the Nasdaq OUCH Enter Order message', group: 'Send' },
+    { name: 'mii_tx', note: 'Adds preamble and CRC and sends the frame to the Ethernet chip', group: 'Send' },
   ]}
 />
 
@@ -135,7 +135,7 @@ Measured on the board at 100 MHz, replaying 208,906 real Nasdaq ITCH messages fr
   title="Latency of each of the 159 orders"
   xLabel="order"
   groups={[
-    { label: 'No wait, 160 ns or less', test: (v) => v <= 160, color: 'blue' },
+    { label: 'No wait, 160 ns or less', test: (v) => v <= 160, color: 'ink' },
     { label: 'Waited behind an earlier order', test: (v) => v > 160, color: 'red' },
   ]}
   reference={{ value: 130, label: 'median 130 ns' }}

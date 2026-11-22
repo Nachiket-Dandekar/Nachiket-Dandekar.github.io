@@ -20,7 +20,7 @@ That's it. You never need to edit any other file.
 |---|---|---|
 | `title` | yes | Project name. |
 | `date` | yes | `YYYY-MM-DD`. Projects are listed newest first. |
-| `tags` | yes | One or more of `FPGA`, `PCB`, `embedded`, `software`. The first tag sets the card color. |
+| `tags` | yes | One or more of `FPGA`, `PCB`, `embedded`, `software`. |
 | `summary` | yes | Two sentences at the top of the project page. |
 | `measured` | no | One line under the numbers on how you measured them. |
 | `blurb` | no | One line for the card. Falls back to `summary`. |
@@ -80,10 +80,12 @@ Add `wide` to let it grow wider than the text, or `maxHeight={500}` to crop a ta
 
 ```mdx
 <Pipeline steps={[
-  { name: 'adc', note: 'Samples the input at 1 MHz', color: 'blue' },
-  { name: 'filter', note: 'FIR, 32 taps', color: 'yellow' },
+  { name: 'adc', note: 'Samples the input at 1 MHz', group: 'Input' },
+  { name: 'filter', note: 'FIR, 32 taps', group: 'Processing' },
 ]} />
 ```
+
+`group` is optional. It adds a small label each time the group changes.
 
 **A chart from a CSV file in the project folder.**
 
@@ -95,7 +97,20 @@ import data from './latency.csv?raw';
   caption="One sentence about the chart." />
 ```
 
-`y` is the column to plot. `scale` multiplies it (10 turns 100 MHz cycles into ns). Add `groups` to color points by rule, and `reference` for a dashed line. See the tick-to-trade project for a full example.
+`y` is the column to plot. `scale` multiplies it (10 turns 100 MHz cycles into ns). Add `groups` to split points by a rule, and `reference` for a dashed line. See the tick-to-trade project for a full example.
+
+## Colors
+
+Colors on this site always mean the same thing. Everything else is black, white or gray.
+
+| Color | Meaning |
+|---|---|
+| Blue | Something you can click |
+| Red | A problem, or a "before" number |
+| Green | A fix, or an "after" number |
+| Yellow | Something I'm working on now |
+
+In charts, use `color: 'ink'` (gray) for normal points and `color: 'red'` only for points that show a problem.
 
 ## Build log (optional)
 
@@ -108,6 +123,23 @@ title: Build log
 ```
 
 Use `./image.png` for images so they get resized too.
+
+## Working on now
+
+The "Working on now" list on the home page is separate from projects. Each item is one short file in `src/content/now/`:
+
+```md
+---
+title: Custom FPGA board
+stage: Planning
+order: 2
+# link: { label: The project, href: /projects/your-project-name/ }
+---
+
+One to three sentences on what you are doing.
+```
+
+`order` sets the position (lower first). Delete the file when it is done, or turn it into a project.
 
 ## Checking for missing text
 

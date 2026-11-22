@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectRow from '../../components/ProjectRow.astro';
-import { TAGS, TAG_COLOR } from '../../site.config';
+import { TAGS } from '../../site.config';
 import { getProjects } from '../../lib/utils';
 
 const projects = await getProjects();
@@ -20,7 +20,7 @@ const counts = Object.fromEntries(TAGS.map((t) => [t, projects.filter((p) => p.d
       <button type="button" data-tag="" aria-pressed="true">All <span>{projects.length}</span></button>
       {
         TAGS.map((t) => (
-          <button type="button" data-tag={t} aria-pressed="false" style={`--c: var(--${TAG_COLOR[t]})`} disabled={counts[t] === 0}>
+          <button type="button" data-tag={t} aria-pressed="false" disabled={counts[t] === 0}>
             {t} <span>{counts[t]}</span>
           </button>
         ))
@@ -57,7 +57,6 @@ const counts = Object.fromEntries(TAGS.map((t) => [t, projects.filter((p) => p.d
     margin-bottom: 0.5rem;
   }
   .filters button {
-    --c: var(--ink);
     font: 500 0.8rem var(--font-mono);
     color: var(--ink);
     background: var(--soft);
@@ -71,12 +70,12 @@ const counts = Object.fromEntries(TAGS.map((t) => [t, projects.filter((p) => p.d
     margin-left: 0.25rem;
   }
   .filters button:hover:not(:disabled) {
-    border-color: var(--c);
+    border-color: var(--blue);
   }
   .filters button[aria-pressed='true'] {
-    border-color: var(--c);
-    color: var(--c);
-    background: color-mix(in srgb, var(--c) 14%, transparent);
+    border-color: var(--blue);
+    color: var(--blue);
+    background: color-mix(in srgb, var(--blue) 14%, transparent);
   }
   .filters button:disabled {
     opacity: 0.45;

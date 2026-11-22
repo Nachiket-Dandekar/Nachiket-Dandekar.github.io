@@ -27,9 +27,6 @@ const { Content, headings } = await render(project);
 // Sections: 1 Summary, 2 Video, 3..n from the MDX body (## headings), then Links.
 const bodySections = headings.filter((h) => h.depth === 2).length;
 const linksNumber = 3 + bodySections;
-const HUES = ['blue', 'red', 'yellow', 'green'];
-const STAT_HUES = ['blue', 'yellow', 'green']; // no red: red means "bad" next to a result
-const hue = (n: number) => HUES[(n + 2) % 4]; // 2 -> blue, 3 -> red, 4 -> yellow, ...
 
 const isTodo = (s?: string) => !!s && /TODO/.test(s);
 const downloads = d.downloads.map((f) => ({ ...f, href: projectFileUrl(project, f.file) })).filter((f) => f.href);
@@ -47,22 +44,22 @@ if (missingDownloads.length) {
         {d.tags.map((t) => <Tag tag={t} />)}
         <time class="mono-sm" datetime={d.date.toISOString().slice(0, 10)}>{formatDate(d.date)}</time>
         {d.status && <span class="mono-sm">{d.status}</span>}
-        {d.draft && <span class="draft">draft, hidden on the live site</span>}
+        {d.draft && <span class="mono-sm">draft, hidden on the live site</span>}
       </div>
       <h1>{d.title}</h1>
     </header>
 
     <section class="summary" aria-labelledby="s-summary">
-      <h2 id="s-summary" class="label"><span class="c-green">1</span> Summary</h2>
+      <h2 id="s-summary" class="label"><span class="n">1</span> Summary</h2>
       <p class:list={['lede', { todo: isTodo(d.summary) }]}>{d.summary}</p>
       {
         d.stats.length > 0 && (
           <dl class="stats">
-            {d.stats.map((s, i) => (
+            {d.stats.map((s) => (
               <div>
                 <dt class:list={{ todo: isTodo(s.label) }}>{s.label}</dt>
-                <dd class:list={[`c-${STAT_HUES[i % 3]}`, { todo: isTodo(s.value) }]}>
-                  {/^\d+(\.\d+)?$/.test(s.value) ? <span data-count={s.value}>{s.value}</span> : s.value}
+                <dd class:list={{ todo: isTodo(s.value) }}>
+                  {s.value}
                   {s.unit && <span class="unit">{s.unit}</span>}
                 </dd>
               </div>
@@ -74,7 +71,7 @@ if (missingDownloads.length) {
     </section>
 
     <section aria-labelledby="s-video">
-      <h2 id="s-video" class="sec"><span class={`n c-${hue(2)}`}>2</span>Video</h2>
+      <h2 id="s-video" class="sec"><span class="n">2</span>Video</h2>
       <YouTube id={d.youtube} title={`${d.title}, explained`} />
     </section>
 
@@ -83,7 +80,7 @@ if (missingDownloads.length) {
     </div>
 
     <section aria-labelledby="s-links">
-      <h2 id="s-links" class="sec"><span class={`n c-${hue(linksNumber)}`}>{linksNumber}</span>Links</h2>
+      <h2 id="s-links" class="sec"><span class="n">{linksNumber}</span>Links</h2>
       <ul class="links">
         {
           d.repo &&
@@ -141,10 +138,6 @@ if (missingDownloads.length) {
     align-items: center;
     gap: 0.4rem 0.8rem;
   }
-  .draft {
-    font: 0.75rem var(--font-mono);
-    color: var(--yellow);
-  }
   h1 {
     font-size: 2.9rem;
     line-height: 1.1;
@@ -154,14 +147,19 @@ if (missingDownloads.length) {
   }
   .summary {
     background: var(--soft);
-    border-left: 3px solid var(--blue);
-    border-radius: 0 10px 10px 0;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
     padding: 1.25rem 1.5rem;
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
   }
   .summary .label {
     margin-bottom: 0.5rem;
+  }
+  .summary .label .n {
+    font: inherit;
+    vertical-align: baseline;
+    margin-right: 0.35rem;
   }
   .lede {
     font-size: 1.2rem;
@@ -199,8 +197,9 @@ if (missingDownloads.length) {
     font-weight: 700;
     margin: 3.25rem 0 1rem;
   }
-  .sec .n {
+  .n {
     font: 500 0.875rem var(--font-mono);
+    color: var(--muted);
     margin-right: 0.7rem;
     vertical-align: 0.3em;
   }

@@ -31,7 +31,8 @@ See [ADDING_A_PROJECT.md](ADDING_A_PROJECT.md). Short version: add a folder unde
 | Path | What it is |
 |---|---|
 | `src/content/projects/` | One folder per project, with its images and optional `log.md` |
-| `src/site.config.ts` | Name, email, GitHub and LinkedIn links, tag colors |
+| `src/content/now/` | The "Working on now" items on the home page, one short file each |
+| `src/site.config.ts` | Name, email, GitHub and LinkedIn links, project tags |
 | `src/pages/about.astro` | About page text: bio, experience, education, skills |
 | `src/assets/profile.jpg` | Your photo (add it; the photo slot shows until then) |
 | `public/resume.pdf` | Your resume (add it; the download links appear when it exists) |

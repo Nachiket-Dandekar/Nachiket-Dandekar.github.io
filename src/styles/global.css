@@ -7,6 +7,11 @@
 /* Dark is the default. Light applies only when <html data-theme="light">. */
 @custom-variant light (&:where([data-theme=light], [data-theme=light] *));
 
+/* Color rule: everything is black, white or gray, except
+   blue   = something you can click (links, buttons)
+   red    = a problem, or a "before" number
+   green  = a fix, or an "after" number
+   yellow = something I'm working on now */
 :root {
   --bg: #0b0d10;
   --ink: #f3f2ee;
@@ -75,7 +80,7 @@
     text-underline-offset: 3px;
   }
   :focus-visible {
-    outline: 2px solid var(--yellow);
+    outline: 2px solid var(--blue);
     outline-offset: 3px;
     border-radius: 2px;
   }
@@ -120,8 +125,8 @@
 
   /* Highlight TODO markers so they are easy to find before publishing. */
   .todo {
-    background: color-mix(in srgb, var(--yellow) 18%, transparent);
-    outline: 1px dashed var(--yellow);
+    background: var(--panel);
+    outline: 1px dashed var(--muted);
     border-radius: 3px;
     padding: 0 0.25em;
   }
@@ -143,13 +148,10 @@
   .prose.numbered h2::before {
     content: counter(section);
     font: 500 0.875rem var(--font-mono);
+    color: var(--muted);
     margin-right: 0.7rem;
     vertical-align: 0.3em;
   }
-  .prose.numbered h2:nth-of-type(4n + 1)::before { color: var(--red); }
-  .prose.numbered h2:nth-of-type(4n + 2)::before { color: var(--yellow); }
-  .prose.numbered h2:nth-of-type(4n + 3)::before { color: var(--green); }
-  .prose.numbered h2:nth-of-type(4n + 4)::before { color: var(--blue); }
   .prose h3 {
     font-size: 1.3rem;
     font-weight: 600;

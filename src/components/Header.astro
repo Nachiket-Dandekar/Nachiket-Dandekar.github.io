@@ -26,11 +26,11 @@ const isCurrent = (href: string) => here === href || (href !== '/' && here.start
     </nav>
     <div class="order-2 ml-auto sm:order-3 sm:ml-0"><ThemeToggle /></div>
   </div>
-  <div class="color-bar" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 </header>
 
 <style>
   .site-header {
+    border-bottom: 1px solid var(--rule);
     background: color-mix(in srgb, var(--bg) 72%, transparent);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -46,16 +46,7 @@ const isCurrent = (href: string) => here === href || (href !== '/' && here.start
   .nav-link[aria-current='page'] {
     color: var(--ink);
     text-decoration: underline;
-    text-decoration-color: var(--yellow);
+    text-decoration-color: var(--ink);
     text-decoration-thickness: 2px;
   }
-  .color-bar {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    height: 3px;
-  }
-  .color-bar i:nth-child(1) { background: var(--blue); }
-  .color-bar i:nth-child(2) { background: var(--red); }
-  .color-bar i:nth-child(3) { background: var(--yellow); }
-  .color-bar i:nth-child(4) { background: var(--green); }
 </style>

@@ -57,4 +57,19 @@ const logs = defineCollection({
   }),
 });
 
-export const collections = { projects, logs };
+// "Working on now" items on the home page: one short file each in src/content/now/
+// The text under the front matter is the description (one to three sentences).
+const now = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/now' }),
+  schema: z.object({
+    title: z.string(),
+    // Short stage, e.g. "Planning", "Recording", "Building"
+    stage: z.string(),
+    // Lower numbers show first
+    order: z.number().default(0),
+    // Optional link, e.g. to a related project: { label: 'The project', href: '/projects/fpga-tick-to-trade/' }
+    link: z.object({ label: z.string(), href: z.string() }).optional(),
+  }),
+});
+
+export const collections = { projects, logs, now };

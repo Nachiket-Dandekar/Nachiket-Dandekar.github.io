@@ -19,7 +19,6 @@ const experience = [
     org: 'NASA Johnson Space Center',
     role: 'Electrical engineering intern, SEV team',
     when: 'June to July 2026',
-    color: 'blue',
     points: [
       'TODO: what you worked on. Only include what you are cleared to share publicly.',
       'TODO: a result or number, if you can share one.',
@@ -27,9 +26,8 @@ const experience = [
   },
   {
     org: 'FRC Team 2468',
-    role: 'Electrical co-lead',
+    role: 'Electrical co-lead in 2026. Team member from 2022 to 2025.',
     when: '2022 to 2026',
-    color: 'red',
     points: ['TODO: what you led or built on the robot electrical system.', 'TODO: a result, for example a competition or a fix you made.'],
   },
 ];
@@ -39,7 +37,6 @@ const education = [
     org: 'University of Texas at San Antonio (UTSA)',
     role: 'Electrical engineering',
     when: 'Started fall 2026',
-    color: 'yellow',
     points: ['TODO: expected graduation year, and any relevant courses or clubs.'],
   },
 ];
@@ -86,7 +83,7 @@ const isTodo = (s: string) => s.startsWith('TODO');
       <ol class="timeline">
         {
           experience.map((e) => (
-            <li style={`--c: var(--${e.color})`}>
+            <li>
               <div class="when mono-sm">{e.when}</div>
               <h3>{e.org}</h3>
               <p class="role">{e.role}</p>
@@ -106,7 +103,7 @@ const isTodo = (s: string) => s.startsWith('TODO');
       <ol class="timeline">
         {
           education.map((e) => (
-            <li style={`--c: var(--${e.color})`}>
+            <li>
               <div class="when mono-sm">{e.when}</div>
               <h3>{e.org}</h3>
               <p class="role">{e.role}</p>
@@ -125,8 +122,8 @@ const isTodo = (s: string) => s.startsWith('TODO');
       <h2 id="skills" class="sec">Skills</h2>
       <dl class="skills">
         {
-          skills.map((s, i) => (
-            <div style={`--c: var(--${['blue', 'yellow', 'green', 'red'][i % 4]})`}>
+          skills.map((s) => (
+            <div>
               <dt>{s.group}</dt>
               <dd>
                 <ul>
@@ -168,14 +165,14 @@ const isTodo = (s: string) => s.startsWith('TODO');
     display: inline-block;
     margin-top: 0.5rem;
     font: 500 0.9rem var(--font-mono);
-    color: var(--green);
-    border: 1px solid color-mix(in srgb, var(--green) 55%, transparent);
+    color: var(--blue);
+    border: 1px solid color-mix(in srgb, var(--blue) 55%, transparent);
     border-radius: 999px;
     padding: 0.35rem 1rem;
     text-decoration: none;
   }
   .resume:hover {
-    background: color-mix(in srgb, var(--green) 15%, transparent);
+    background: color-mix(in srgb, var(--blue) 15%, transparent);
   }
   .sec {
     font-size: 1.75rem;
@@ -199,7 +196,7 @@ const isTodo = (s: string) => s.startsWith('TODO');
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: var(--c);
+    background: var(--muted);
     box-shadow: 0 0 0 4px var(--bg);
   }
   .timeline > li:last-child {
@@ -223,7 +220,7 @@ const isTodo = (s: string) => s.startsWith('TODO');
     margin-top: 0.3rem;
   }
   .timeline ul li::marker {
-    color: var(--c);
+    color: var(--muted);
   }
   .skills {
     display: grid;
@@ -238,7 +235,7 @@ const isTodo = (s: string) => s.startsWith('TODO');
   }
   dt {
     font: 600 0.85rem var(--font-mono);
-    color: var(--c);
+    color: var(--muted);
     padding-top: 0.2rem;
   }
   dd ul {

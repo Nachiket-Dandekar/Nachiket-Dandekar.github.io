@@ -3,9 +3,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE } from '../site.config';
 
 const links = [
-  { label: 'Email', value: SITE.email, href: `mailto:${SITE.email}`, color: 'blue', copy: true },
-  { label: 'GitHub', value: SITE.github.replace('https://', ''), href: SITE.github, color: 'yellow' },
-  { label: 'LinkedIn', value: SITE.linkedin.replace('https://www.', ''), href: SITE.linkedin, color: 'green' },
+  { label: 'Email', value: SITE.email, href: `mailto:${SITE.email}`, copy: true },
+  { label: 'GitHub', value: SITE.github.replace('https://', ''), href: SITE.github },
+  { label: 'LinkedIn', value: SITE.linkedin.replace('https://www.', ''), href: SITE.linkedin },
 ];
 ---
 
@@ -20,7 +20,7 @@ const links = [
     <ul class="links">
       {
         links.map((l) => (
-          <li style={`--c: var(--${l.color})`}>
+          <li>
             <span class="what label">{l.label}</span>
             <a href={l.href} rel={l.label === 'Email' ? undefined : 'me'}>
               {l.value}
@@ -60,17 +60,15 @@ const links = [
     grid-template-columns: 7rem 1fr auto;
     align-items: center;
     gap: 1rem;
-    padding: 1.1rem 0 1.1rem 1rem;
+    padding: 1.1rem 0;
     border-bottom: 1px solid var(--rule);
-    border-left: 3px solid var(--c);
   }
   .what {
-    color: var(--c);
+    color: var(--muted);
   }
   .links a {
     font: 500 1.05rem var(--font-mono);
-    color: var(--ink);
-    text-decoration-color: var(--c);
+    color: var(--blue);
     overflow-wrap: anywhere;
   }
   .copy {
@@ -83,7 +81,7 @@ const links = [
     cursor: pointer;
   }
   .copy:hover {
-    border-color: var(--c);
+    border-color: var(--blue);
   }
   @media (max-width: 720px) {
     .head {
