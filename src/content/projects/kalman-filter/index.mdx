@@ -19,8 +19,8 @@ stats:
     label: average position error of the raw sensor readings
   - value: '2.5x'
     label: closer to the true position than the raw readings (median)
-cover: ./cover.png
-coverAlt: Chart of one run of the filter. Noisy sensor readings are scattered as red dots around the dashed true path, and the Kalman estimate is a green line that follows it closely.
+cover: ./matlab_plot.png
+coverAlt: MATLAB plot of one run of the filter. Red dots are noisy sensor readings scattered around the dashed true path, and the cyan Kalman estimate follows the path closely.
 fix:
   label: Average position error
   before: '3.12 m raw'
@@ -39,6 +39,7 @@ draft: false
 ---
 
 import run from './kalman_run.csv?raw';
+import matlabPlot from './matlab_plot.png';
 
 ## Why I built it
 
@@ -102,6 +103,12 @@ for i = 1:length(time)
     filtered_estimate(i) = x(1);
 end
 ```
+
+<Figure
+  src={matlabPlot}
+  alt="MATLAB plot titled Kalman Filter: State Estimation over Time. Position in meters against time in seconds from 0 to 10. Red dots are the noisy sensor readings, a dashed line is the true path, and a cyan line is the Kalman filter estimate, which follows the true path closely."
+  caption="The plot my MATLAB script makes. The red dots are the raw sensor readings and the cyan line is the filter's estimate."
+/>
 
 ## What went wrong and what I optimized
 

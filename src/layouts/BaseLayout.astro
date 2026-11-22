@@ -53,5 +53,12 @@ const ogImage = image ? new URL((await getImage({ src: image, width: 1200, forma
       <slot />
     </main>
     <Footer />
+    <script>
+      // Every video on the site starts muted.
+      document.querySelectorAll('video').forEach((v) => {
+        v.muted = true;
+        v.setAttribute('muted', '');
+      });
+    </script>
   </body>
 </html>

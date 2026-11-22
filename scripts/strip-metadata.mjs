@@ -1,4 +1,5 @@
-// Removes hidden metadata (EXIF, GPS location, camera model, dates, XMP, IPTC, text tags)
+// Removes hidden metadata (EXIF, GPS location, camera model, dates, XMP, IPTC, text tags, and
+// C2PA "content credentials" such as AI-tool provenance tags)
 // from every image under src/ and public/. Runs on its own before `npm run dev` and `npm run build`,
 // so a photo straight from a phone is cleaned before it can reach GitHub or the live site.
 // Run it by hand with: npm run strip-metadata
@@ -26,7 +27,10 @@ roots.forEach(walk);
 let cleaned = 0;
 for (const file of files) {
   const meta = await sharp(file).metadata();
-  const dirty = meta.exif || meta.xmp || meta.iptc || (meta.comments && meta.comments.length > 0);
+  // sharp does not report C2PA / JUMBF provenance records, so also look for them in the raw bytes.
+  const raw = fs.readFileSync(file);
+  const provenance = /c2pa|jumb|contentcredentials/i.test(raw.toString('latin1'));
+  const dirty = provenance || meta.exif || meta.xmp || meta.iptc || (meta.comments && meta.comments.length > 0);
   if (!dirty) continue;
   // rotate() applies the EXIF orientation first, so phone photos stay the right way up.
   let img = sharp(file).rotate();

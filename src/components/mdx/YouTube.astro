@@ -1,7 +1,7 @@
 ---
 // Lazy YouTube player. The page shows a thumbnail that is downloaded at build time and served
 // from this site. The player (from the privacy-enhanced youtube-nocookie.com domain) loads only
-// after the visitor presses play. With no id, it shows a clean placeholder.
+// after the visitor presses play, and it starts muted. With no id, it shows a clean placeholder.
 import { getImage } from 'astro:assets';
 
 interface Props {
@@ -124,7 +124,8 @@ if (id) {
     const button = wrap.querySelector('button');
     button?.addEventListener('click', () => {
       const iframe = document.createElement('iframe');
-      iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(wrap.dataset.yt ?? '')}?autoplay=1&rel=0`;
+      // mute=1: videos always start muted. Viewers can turn the sound on in the player.
+      iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(wrap.dataset.yt ?? '')}?autoplay=1&mute=1&rel=0`;
       iframe.title = wrap.dataset.title ?? 'YouTube video';
       iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
       iframe.allowFullscreen = true;
