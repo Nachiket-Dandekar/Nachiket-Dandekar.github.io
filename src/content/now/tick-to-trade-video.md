@@ -1,7 +1,7 @@
 ---
 title: Video walkthrough of the FPGA tick-to-trade project
 stage: In progress
-order: 1
+order: 2
 link:
   label: The project
   href: /projects/fpga-tick-to-trade/
