@@ -38,6 +38,8 @@ const projects = defineCollection({
       // Files in the project folder to offer as downloads, e.g. { label: 'Latency data', file: 'latency.csv' }
       downloads: z.array(z.object({ label: z.string(), file: z.string() })).default([]),
       status: z.string().optional(),
+      // One fix to show on the project card in the "bold" look: { label, before, after }
+      fix: z.object({ label: z.string(), before: z.string(), after: z.string() }).optional(),
       featured: z.boolean().default(false),
       draft: z.boolean().default(false),
     })
@@ -67,6 +69,8 @@ const now = defineCollection({
     stage: z.string(),
     // Lower numbers show first
     order: z.number().default(0),
+    // Topic, for the "topic" color look: one of FPGA, ASIC, PCB, embedded, software
+    topic: z.enum(TAGS).optional(),
     // Optional link, e.g. to a related project: { label: 'The project', href: '/projects/fpga-tick-to-trade/' }
     link: z.object({ label: z.string(), href: z.string() }).optional(),
   }),

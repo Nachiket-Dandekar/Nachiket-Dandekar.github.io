@@ -1,0 +1,81 @@
+---
+// Only shown in `npm run dev`: switch between the color looks to compare them.
+// The live site uses LOOK from src/site.config.ts.
+import { LOOK } from '../site.config';
+
+const looks = [
+  { id: 'current', label: 'Current' },
+  { id: 'topic', label: '1 Topic' },
+  { id: 'bold', label: '2 Bold' },
+  { id: 'navy', label: '3 Navy' },
+];
+---
+
+<div class="look-switcher" role="group" aria-label="Color look (dev only)" data-default-look={LOOK}>
+  <span>Look</span>
+  {
+    looks.map((l) => (
+      <button type="button" data-look-btn={l.id}>
+        {l.label}
+      </button>
+    ))
+  }
+</div>
+
+<style>
+  .look-switcher {
+    position: fixed;
+    left: 12px;
+    bottom: 12px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font: 500 0.72rem var(--font-mono);
+    color: var(--muted);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 4px 4px 4px 12px;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.3);
+  }
+  .look-switcher span {
+    margin-right: 4px;
+  }
+  button {
+    font: inherit;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 3px 10px;
+    cursor: pointer;
+  }
+  button:hover {
+    border-color: var(--rule);
+  }
+  button[aria-pressed='true'] {
+    background: var(--ink);
+    color: var(--bg);
+  }
+</style>
+
+<script>
+  const root = document.documentElement;
+  const box = document.querySelector<HTMLElement>('.look-switcher');
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-look-btn]')];
+  const sync = () => buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lookBtn === root.dataset.look)));
+  buttons.forEach((b) =>
+    b.addEventListener('click', () => {
+      root.dataset.look = b.dataset.lookBtn;
+      try {
+        localStorage.setItem('look', b.dataset.lookBtn ?? '');
+      } catch (e) {}
+      const u = new URL(location.href);
+      u.searchParams.delete('look');
+      history.replaceState(null, '', u);
+      sync();
+    }),
+  );
+  if (box) sync();
+</script>

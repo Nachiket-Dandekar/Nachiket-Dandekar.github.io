@@ -5,6 +5,7 @@ import Tag from '../../../components/Tag.astro';
 import YouTube from '../../../components/mdx/YouTube.astro';
 import { mdxComponents } from '../../../components/mdx';
 import { getProjects, formatDate, projectFileUrl, url } from '../../../lib/utils';
+import { topicVar } from '../../../site.config';
 
 export async function getStaticPaths() {
   const projects = await getProjects();
@@ -49,7 +50,7 @@ if (missingDownloads.length) {
       <h1>{d.title}</h1>
     </header>
 
-    <section class="summary" aria-labelledby="s-summary">
+    <section class="summary" aria-labelledby="s-summary" style={`--tc: ${topicVar(d.tags[0])}`}>
       <h2 id="s-summary" class="label"><span class="n">1</span> Summary</h2>
       <p class:list={['lede', { todo: isTodo(d.summary) }]}>{d.summary}</p>
       {
@@ -211,6 +212,14 @@ if (missingDownloads.length) {
   }
   .links .muted {
     color: var(--muted);
+  }
+  /* "topic" look: the summary takes the project's topic color. */
+  :global([data-look='topic']) .summary {
+    border-left: 3px solid var(--tc);
+    border-radius: 0 10px 10px 0;
+  }
+  :global([data-look='topic']) .stats dd {
+    color: var(--tc);
   }
   @media (max-width: 720px) {
     h1 {

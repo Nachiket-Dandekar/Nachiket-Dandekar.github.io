@@ -90,4 +90,11 @@ const { rows, caption } = Astro.props;
     color: var(--muted);
     font-weight: 400;
   }
+  /* "bold" look: tint the before and after cells. */
+  :global([data-look='bold']) td.c-red {
+    background: color-mix(in srgb, var(--red) 12%, transparent);
+  }
+  :global([data-look='bold']) td.c-green {
+    background: color-mix(in srgb, var(--green) 12%, transparent);
+  }
 </style>

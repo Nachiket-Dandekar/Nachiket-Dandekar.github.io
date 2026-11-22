@@ -165,14 +165,14 @@ const isTodo = (s: string) => s.startsWith('TODO');
     display: inline-block;
     margin-top: 0.5rem;
     font: 500 0.9rem var(--font-mono);
-    color: var(--blue);
-    border: 1px solid color-mix(in srgb, var(--blue) 55%, transparent);
+    color: var(--link);
+    border: 1px solid color-mix(in srgb, var(--link) 55%, transparent);
     border-radius: 999px;
     padding: 0.35rem 1rem;
     text-decoration: none;
   }
   .resume:hover {
-    background: color-mix(in srgb, var(--blue) 15%, transparent);
+    background: color-mix(in srgb, var(--link) 15%, transparent);
   }
   .sec {
     font-size: 1.75rem;
@@ -264,5 +264,10 @@ const isTodo = (s: string) => s.startsWith('TODO');
       grid-template-columns: 1fr;
       gap: 0.4rem;
     }
+  }
+  :global([data-look='bold']) .resume {
+    background: var(--link);
+    border-color: var(--link);
+    color: var(--bg);
   }
 </style>

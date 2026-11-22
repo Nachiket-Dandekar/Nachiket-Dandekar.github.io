@@ -22,6 +22,14 @@ Other commands:
 | `npm run todos` | Lists every `TODO:` still in the content |
 | `npm run check` | Type-checks the code |
 
+## Color looks
+
+There are four color looks: `current`, `topic`, `bold` and `navy`. In `npm run dev`, a switcher at the bottom left lets you flip between them on any page. The live site uses the one set in `LOOK` in `src/site.config.ts`.
+
+## If the dev server shows old content
+
+After changing `src/content.config.ts`, stop the dev server, delete the `.astro` folder, and start it again.
+
 ## Add a project
 
 See [ADDING_A_PROJECT.md](ADDING_A_PROJECT.md). Short version: add a folder under `src/content/projects/` with an `index.mdx` and its images.

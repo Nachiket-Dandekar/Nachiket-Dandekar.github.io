@@ -68,7 +68,7 @@ const links = [
   }
   .links a {
     font: 500 1.05rem var(--font-mono);
-    color: var(--blue);
+    color: var(--link);
     overflow-wrap: anywhere;
   }
   .copy {
@@ -81,7 +81,7 @@ const links = [
     cursor: pointer;
   }
   .copy:hover {
-    border-color: var(--blue);
+    border-color: var(--link);
   }
   @media (max-width: 720px) {
     .head {
@@ -99,6 +99,11 @@ const links = [
     .links a {
       font-size: 0.92rem;
     }
+  }
+  :global([data-look='bold']) .copy {
+    background: var(--link);
+    border-color: var(--link);
+    color: var(--bg);
   }
 </style>
 

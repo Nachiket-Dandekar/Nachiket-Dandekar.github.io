@@ -1,6 +1,7 @@
 ---
 title: Custom FPGA board
-stage: Planning
+stage: Coming soon
+topic: PCB
 order: 3
 ---
 

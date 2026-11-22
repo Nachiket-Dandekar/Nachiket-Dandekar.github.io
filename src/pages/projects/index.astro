@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectRow from '../../components/ProjectRow.astro';
-import { TAGS } from '../../site.config';
+import { TAGS, topicVar } from '../../site.config';
 import { getProjects } from '../../lib/utils';
 
 const projects = await getProjects();
@@ -20,7 +20,7 @@ const counts = Object.fromEntries(TAGS.map((t) => [t, projects.filter((p) => p.d
       <button type="button" data-tag="" aria-pressed="true">All <span>{projects.length}</span></button>
       {
         TAGS.map((t) => (
-          <button type="button" data-tag={t} aria-pressed="false" disabled={counts[t] === 0}>
+          <button type="button" data-tag={t} aria-pressed="false" disabled={counts[t] === 0} style={`--tc: ${topicVar(t)}`}>
             {t} <span>{counts[t]}</span>
           </button>
         ))
@@ -70,12 +70,30 @@ const counts = Object.fromEntries(TAGS.map((t) => [t, projects.filter((p) => p.d
     margin-left: 0.25rem;
   }
   .filters button:hover:not(:disabled) {
-    border-color: var(--blue);
+    border-color: var(--link);
   }
   .filters button[aria-pressed='true'] {
-    border-color: var(--blue);
-    color: var(--blue);
-    background: color-mix(in srgb, var(--blue) 14%, transparent);
+    border-color: var(--link);
+    color: var(--link);
+    background: color-mix(in srgb, var(--link) 14%, transparent);
+  }
+  :global([data-look='bold']) .filters button[aria-pressed='true'] {
+    background: var(--link);
+    color: var(--bg);
+  }
+  :global([data-look='bold']) .filters button[aria-pressed='true'] span {
+    color: var(--bg);
+  }
+  :global([data-look='topic']) .filters button[style][aria-pressed='true'],
+  :global([data-look='topic']) .filters button[style]:hover:not(:disabled) {
+    border-color: var(--tc);
+    color: var(--tc);
+    background: color-mix(in srgb, var(--tc) 14%, transparent);
+  }
+  :global([data-look='topic']) .filters button:not([style])[aria-pressed='true'] {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: var(--panel);
   }
   .filters button:disabled {
     opacity: 0.45;

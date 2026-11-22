@@ -41,6 +41,49 @@
   color-scheme: light;
 }
 
+/* ---------- Looks ----------
+   Pick one in src/site.config.ts (LOOK). In `npm run dev` a switcher at the bottom left lets you compare them.
+   current: the color rule above.
+   topic:   each project topic has its own color, used on its tags, numbers and dots. Links are white and underlined.
+   bold:    the same four meanings as current, used more boldly (filled buttons, a yellow "now" panel).
+   navy:    the same rule as current, on deep navy instead of black. */
+:root {
+  --link: var(--blue);
+  --t-fpga: #4d8dff;
+  --t-asic: #a78bfa;
+  --t-pcb: #f59e5b;
+  --t-embedded: #f472b6;
+  --t-software: #2dd4bf;
+}
+:root[data-theme='light'] {
+  --t-fpga: #1a5fd6;
+  --t-asic: #6d4fd8;
+  --t-pcb: #b45309;
+  --t-embedded: #be185d;
+  --t-software: #0f766e;
+}
+:root[data-look='topic'] {
+  --link: var(--ink);
+}
+:root[data-look='navy'] {
+  --bg: #0d1626;
+  --ink: #eef2fb;
+  --muted: #9fb0cc;
+  --rule: #243450;
+  --soft: rgb(19 32 58 / 0.85);
+  --panel: #13203a;
+  --dot: #8fa6cc;
+}
+:root[data-look='navy'][data-theme='light'] {
+  --bg: #f4f7fc;
+  --ink: #0f1a2e;
+  --muted: #4a5873;
+  --rule: #d6deeb;
+  --soft: rgb(232 238 248 / 0.88);
+  --panel: #e8eef8;
+  --dot: #3a4a66;
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-ink: var(--ink);
@@ -76,16 +119,16 @@
     }
   }
   a {
-    color: var(--blue);
+    color: var(--link);
     text-underline-offset: 3px;
   }
   :focus-visible {
-    outline: 2px solid var(--blue);
+    outline: 2px solid var(--link);
     outline-offset: 3px;
     border-radius: 2px;
   }
   ::selection {
-    background: color-mix(in srgb, var(--blue) 35%, transparent);
+    background: color-mix(in srgb, var(--link) 35%, transparent);
   }
   code,
   kbd,

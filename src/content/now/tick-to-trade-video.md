@@ -1,6 +1,7 @@
 ---
 title: Video walkthrough of the FPGA tick-to-trade project
-stage: In progress
+stage: Coming soon
+topic: FPGA
 order: 2
 link:
   label: The project

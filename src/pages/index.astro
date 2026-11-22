@@ -3,7 +3,7 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProjectRow from '../components/ProjectRow.astro';
 import ProfilePhoto from '../components/ProfilePhoto.astro';
-import { SITE } from '../site.config';
+import { SITE, topicVar } from '../site.config';
 import { getProjects, hasResume, url } from '../lib/utils';
 
 const projects = await getProjects();
@@ -49,7 +49,7 @@ const href = (h: string) => (h.startsWith('/') ? url(h) : h);
     <section aria-labelledby="latest">
       <div class="section-head">
         <h2 id="latest" class="label">{shown.length > 1 ? 'Projects' : 'Latest project'}</h2>
-        <a href={url('/projects/')} class="mono-sm">All projects &rarr;</a>
+        <a href={url('/projects/')} class="mono-sm all-link">All projects &rarr;</a>
       </div>
       <div class="list">
         {shown.map((p, i) => <ProjectRow project={p} priority={i === 0} />)}
@@ -65,7 +65,7 @@ const href = (h: string) => (h.startsWith('/') ? url(h) : h);
           </div>
           <ul class="now-list">
             {nowItems.map(({ item, Body }) => (
-              <li>
+              <li style={item.data.topic ? `--tc: ${topicVar(item.data.topic)}` : undefined}>
                 <div class="now-head">
                   <h3>{item.data.title}</h3>
                   <span class="stage">{item.data.stage}</span>
@@ -125,14 +125,14 @@ const href = (h: string) => (h.startsWith('/') ? url(h) : h);
     padding: 0.2rem 0.7rem;
   }
   .facts li.link {
-    border-color: color-mix(in srgb, var(--blue) 55%, transparent);
+    border-color: color-mix(in srgb, var(--link) 55%, transparent);
   }
   .facts li.link a {
-    color: var(--blue);
+    color: var(--link);
     text-decoration: none;
   }
   .facts li.link:hover {
-    background: color-mix(in srgb, var(--blue) 15%, transparent);
+    background: color-mix(in srgb, var(--link) 15%, transparent);
   }
   .section-head {
     display: flex;
@@ -188,11 +188,49 @@ const href = (h: string) => (h.startsWith('/') ? url(h) : h);
   .now-link {
     display: inline-block;
     margin-top: 0.5rem;
-    color: var(--blue);
+    color: var(--link);
     text-decoration: none;
   }
   .now-link:hover {
     text-decoration: underline;
+  }
+  /* ---------- "bold" look ---------- */
+  :global([data-look='bold']) .facts li.link {
+    background: var(--link);
+    border-color: var(--link);
+  }
+  :global([data-look='bold']) .facts li.link a {
+    color: var(--bg);
+    font-weight: 600;
+  }
+  :global([data-look='bold']) .all-link {
+    color: var(--link);
+    border: 1px solid color-mix(in srgb, var(--link) 60%, transparent);
+    border-radius: 999px;
+    padding: 0.15rem 0.7rem;
+    text-decoration: none;
+  }
+  :global([data-look='bold']) .now {
+    background: color-mix(in srgb, var(--yellow) 8%, var(--bg));
+    border: 1px solid color-mix(in srgb, var(--yellow) 45%, transparent);
+    border-radius: 12px;
+    padding: 1rem 1.25rem 0.25rem;
+  }
+  :global([data-look='bold']) .now #now {
+    color: var(--yellow);
+  }
+  :global([data-look='bold']) .now-list {
+    border-top-color: color-mix(in srgb, var(--yellow) 45%, transparent);
+  }
+  :global([data-look='bold']) .now-list li:last-child {
+    border-bottom: 0;
+  }
+  /* ---------- "topic" look: dots take the topic color ---------- */
+  :global([data-look='topic']) .now-list li[style]::before {
+    background: var(--tc);
+  }
+  :global([data-look='topic']) .stage {
+    color: var(--muted);
   }
   @media (max-width: 720px) {
     .hero {
