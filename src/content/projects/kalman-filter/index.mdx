@@ -1,15 +1,16 @@
 ---
 # Draft: hidden on the live site until you set draft to false.
-# Written from kalman.m only. The paper and the Python version were not found yet.
-# The numbers come from re-running the same filter in Python (see "Results"). Check them before publishing.
+# Sources: the group slides "Kalman Filters: State Estimation & Sensor Fusion in Robotics" and kalman.m.
+# The error numbers come from re-running the same filter in Python (see "Results").
 title: Kalman filter state estimation
-date: 2026-05-12 # TODO: the date of the class project. This is the date kalman.m was last saved.
+date: 2026-05-12 # TODO: the date of the presentation. This is the date kalman.m was last saved.
 tags: [software]
 summary: >-
-  A Kalman filter in MATLAB that tracks a robot's position along a line from noisy sensor readings. Each step it
-  predicts where the robot should be from a simple physics model, then corrects that guess with the newest reading.
-measured: Averages over 200 simulated runs of the filter, 10 seconds each, with a new set of random sensor noise every run.
-blurb: Tracking a robot's position from noisy sensor readings.
+  A Kalman filter in MATLAB that tracks a robot's position from noisy sensor readings, made for a group
+  presentation in my high school linear algebra class. Every 0.1 seconds it predicts where the robot should be
+  using physics, then corrects that guess with the newest sensor reading.
+measured: Averages over 200 simulated runs of the filter, 10 seconds each, with new random sensor noise every run.
+blurb: How a robot can know where it is when its sensors are noisy.
 stats:
   - value: '1.25'
     unit: m
@@ -31,26 +32,51 @@ import run from './kalman_run.csv?raw';
 
 ## Why I built it
 
-I made this for a class presentation on state estimation. TODO: the class name, and one or two sentences on why you picked the Kalman filter.
+This was a group presentation for my high school linear algebra class. We wanted to show a place where matrices do real work, and robots are a good example: a robot has to know where it is, but every sensor it has is a little wrong.
 
 ## How it works
 
-The filter tracks two numbers: the robot's position and its velocity. It never sees the velocity directly. It only gets a position reading from the sensor every 0.1 seconds, and that reading is noisy.
+### The problem: sensors lie a little
 
-Each step has two parts.
+Robots usually measure their own motion in two ways, and each has a weak spot.
 
-1. **Predict.** Use physics to guess the next state. The model says the new position is the old position plus velocity times 0.1 s, and the velocity stays the same. The filter also grows its uncertainty a little, because the real robot can do things the model does not expect.
-2. **Update.** Compare the prediction with the new sensor reading. The Kalman gain decides how much to trust each one. When the filter is unsure of its prediction, it leans on the sensor. When the sensor is noisy, it leans on the prediction.
+- **Wheel encoders** count how far the wheels turn. They are precise, but they assume the wheels grip the floor. If a wheel spins on carpet, the encoder can report 2 m of travel while the robot has not moved at all.
+- **An IMU** (a tiny motion-sensor chip) measures force and acceleration. It is fast, but small errors add up, so its position estimate drifts over time.
 
-| Matrix | Value | What it means |
+A Kalman filter does not trust any one source. It keeps a best guess and keeps correcting it.
+
+### The idea: predict, then correct
+
+The filter tracks a **state**: the robot's position and velocity, stored as a 2 by 1 vector. Every time step does the same two things.
+
+1. **Predict.** Use physics to guess the next state. For straight-line motion, new position = old position + velocity × time. In matrix form that is one multiply, the new state is `A` times the old state. The filter also makes itself a little less sure of the guess, because real robots do things the model does not expect.
+2. **Correct.** A sensor reading arrives. The filter compares it with what it expected the sensor to read. That difference is called the **innovation**. The filter moves its guess part of the way toward the reading.
+
+How far it moves is set by the **Kalman gain**, `K`. Think of it as a balance between two kinds of doubt: how unsure the filter is about its own prediction, and how noisy the sensor is. In one dimension it works out to roughly
+
+`K = prediction doubt / (prediction doubt + sensor noise)`
+
+- If the sensor is very noisy, `K` goes toward 0 and the filter trusts the physics.
+- If the prediction is very unsure, `K` goes toward 1 and the filter trusts the sensor.
+
+### The matrices
+
+| Matrix | What it is | In my demo |
 |---|---|---|
-| `A` | `[1 0.1; 0 1]` | Physics: position moves by velocity times 0.1 s |
-| `H` | `[1 0]` | The sensor measures position only |
-| `Q` | `[0.1 0; 0 0.1]` | Process noise: how much the robot can surprise the model |
-| `R` | `10` | Sensor noise variance (a standard deviation of about 3.2 m) |
-| `P` | `[1 0; 0 1]` | Starting uncertainty |
+| `A` | Moves the state forward one step using physics | `[1 0.1; 0 1]`: position grows by velocity × 0.1 s, velocity stays the same |
+| `H` | Turns the state into what the sensor sees | `[1 0]`: the sensor reads position only |
+| `Q` | How much the real robot can surprise the model | `0.1` on position and velocity |
+| `R` | How noisy the sensor is | `10`, a standard deviation of about 3.2 m |
+| `P` | How unsure the filter is about its current guess | Starts as the identity matrix and updates every step |
+| `K` | The Kalman gain, recomputed every step from `P` and `R` | Settles near 0.16 (see Results) |
 
-This is the loop from my MATLAB script:
+### Why everything has to be linear
+
+The standard Kalman filter only works when the system is linear, meaning doubling an input doubles the output and adding two inputs adds their outputs. That is why the physics goes in a matrix with no squared terms like t² and no sine or cosine. The filter also assumes the sensor noise follows a bell curve (a normal distribution), which is what lets it describe uncertainty with covariance matrices like `P`, `Q` and `R`.
+
+### My MATLAB demo
+
+To show the filter working, my script simulates a robot that starts at rest and speeds up at 1 m/s² for 10 seconds, so its true position is 0.5t². The fake sensor reports that position plus random noise. This is the filter loop:
 
 ```matlab
 for i = 1:length(time)
@@ -58,7 +84,7 @@ for i = 1:length(time)
     x_pred = A * x;
     P_pred = A * P * A' + Q;
 
-    % Update
+    % Correct
     K = P_pred * H' / (H * P_pred * H' + R);
     x = x_pred + K * (noisy_data(i) - H * x_pred);
     P = (eye(2) - K * H) * P_pred;
@@ -67,21 +93,17 @@ for i = 1:length(time)
 end
 ```
 
-To test it, the script simulates a robot that starts at rest and speeds up at 1 m/s² for 10 seconds, so its true position is 0.5t². The sensor readings are that true position plus random Gaussian noise with a variance of 10.
-
-TODO: describe the Python version, or remove "and Python" from the card if it was MATLAB only.
-
 ## What went wrong and what I optimized
 
 The filter's estimate runs a little behind the true position. The model assumes the velocity stays the same, but the simulated robot keeps speeding up, so the filter is always catching up. In the last 3 seconds of the run below, the estimate is about 1.1 m behind on average. Across 200 runs it is about 1.0 m behind.
+
+Even with that lag, the filter cuts the error by more than half compared with reading the sensor directly.
 
 <BeforeAfter
   rows={[
     { label: 'Average position error, 200 runs', before: '3.12 m raw', after: '1.25 m filtered' },
   ]}
 />
-
-TODO: what you changed or tuned while building it, for example the values of Q and R, and what happened.
 
 ## Results
 
@@ -99,13 +121,15 @@ TODO: what you changed or tuned while building it, for example the values of Q a
   caption="One run of the filter. The red dots are the noisy sensor readings and the green line is the filter's estimate. Hover or tap to read the values."
 />
 
-The chart is one run of the same filter, run again in Python with a fixed random seed so it does not change each time the site builds. In this run the raw readings were off by 2.70 m on average (root mean square) and the filter estimate by 1.24 m.
+The chart is one run of the same filter, run again in Python with a fixed random seed so it looks the same every time the site builds.
 
 | Measure | Raw sensor readings | Kalman estimate |
 |---|---|---|
 | Average position error, the run above | 2.70 m | 1.24 m |
 | Average position error, 200 runs | 3.12 m | 1.25 m |
 
+The Kalman gain starts at 0.10 and settles near 0.16 within about 1.4 seconds. After that, each new reading moves the position estimate about 16% of the way toward what the sensor says.
+
 ## What I would do next
 
-TODO: next steps. {/* One option: add acceleration to the state so the model matches a robot that speeds up, which should remove the lag. */}
+TODO: next steps. {/* Two options that follow from this page: add acceleration to the state so the model matches a robot that speeds up, which should remove the lag; or fuse two sensors, like wheel encoders and an IMU, as in the wheel-slip example. */}
