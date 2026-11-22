@@ -46,3 +46,20 @@ for (const file of files) {
   console.log(`strip-metadata: cleaned ${file.replace(/\\/g, '/')}`);
 }
 console.log(`strip-metadata: ${files.length} image(s) checked, ${cleaned} cleaned.`);
+
+// PDFs cannot be rewritten here, so just warn if one carries provenance tags or author/app fields.
+const pdfs = [];
+(function walkPdf(dir) {
+  if (!fs.existsSync(dir)) return;
+  for (const name of fs.readdirSync(dir)) {
+    const p = path.join(dir, name);
+    if (fs.statSync(p).isDirectory()) walkPdf(p);
+    else if (/\.pdf$/i.test(name)) pdfs.push(p);
+  }
+})('public');
+for (const pdf of pdfs) {
+  const text = fs.readFileSync(pdf).toString('latin1');
+  const found = ['c2pa', 'anthropic', 'claude', '/Author', '/Creator', '/Producer', 'x:xmpmeta'].filter((t) => text.toLowerCase().includes(t.toLowerCase()));
+  if (found.length) console.warn(`strip-metadata: WARNING ${pdf.split(path.sep).join('/')} contains ${found.join(', ')}. Re-export it without document properties.`);
+}
+

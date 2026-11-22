@@ -7,7 +7,7 @@ export const SITE = {
   description:
     'Electrical engineering student at UTSA. FPGA, low-latency systems and chip design projects, with the numbers I measured.',
   email: 'nachitrex@gmail.com',
-  github: 'https://github.com/nachiket-dandekar',
+  github: 'https://github.com/Nachiket-Dandekar',
   linkedin: 'https://www.linkedin.com/in/nacho-d-5bb422362',
   // Put your resume at public/resume.pdf. The download links appear only when that file exists.
   resumeFile: 'resume.pdf',

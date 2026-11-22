@@ -54,11 +54,28 @@ const ogImage = image ? new URL((await getImage({ src: image, width: 1200, forma
     </main>
     <Footer />
     <script>
-      // Every video on the site starts muted.
-      document.querySelectorAll('video').forEach((v) => {
+      // Every video on the site stays muted the whole time. If anything unmutes it or turns the
+      // volume up, it is muted again right away, and the volume control is hidden where possible.
+      const lock = (v: HTMLVideoElement) => {
         v.muted = true;
+        v.volume = 0;
         v.setAttribute('muted', '');
-      });
+        v.addEventListener('volumechange', () => {
+          if (!v.muted || v.volume > 0) {
+            v.muted = true;
+            v.volume = 0;
+          }
+        });
+      };
+      document.querySelectorAll('video').forEach(lock);
+      new MutationObserver((records) =>
+        records.forEach((r) =>
+          r.addedNodes.forEach((n) => {
+            if (n instanceof HTMLVideoElement) lock(n);
+            else if (n instanceof HTMLElement) n.querySelectorAll('video').forEach(lock);
+          }),
+        ),
+      ).observe(document.body, { childList: true, subtree: true });
     </script>
   </body>
 </html>
