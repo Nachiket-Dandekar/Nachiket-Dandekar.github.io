@@ -11,42 +11,50 @@ import { hasResume, url } from '../lib/utils';
 const bio = [
   "I'm from Austin, Texas, and I started electrical engineering at UTSA in fall 2026.",
   'I want to work in hardware: FPGAs, low-latency systems and chip design. In my tick-to-trade project I built the whole path from market data to order on an FPGA, measured it on the board, and found what limits it.',
-  'TODO: two or three sentences on how you got into hardware and what you are looking for next, for example internships or research.',
+  'TODO: one or two sentences on how you got into hardware.',
+  "I'm looking for a full-time internship for summer 2027, and I'm willing to relocate.",
 ];
 
+// From the resume. FRC roles follow what Nachiket said: member 2022 to 2025, co-lead in 2026.
 const experience = [
   {
     org: 'NASA Johnson Space Center',
-    role: 'Electrical engineering intern, SEV team',
+    role: 'Electrical engineering intern, Space Exploration Vehicle (SEV) team',
     when: 'June to July 2026',
     points: [
-      'TODO: what you worked on. Only include what you are cleared to share publicly.',
-      'TODO: a result or number, if you can share one.',
+      "Restored the SEV's battery packs after a cell failure took the vehicle offline. I measured, balanced and replaced cells, reinstalled the packs, and brought the vehicle back online with the battery management system reporting.",
+      'Diagnosed a CAN communication fault in the SEV cabana mechanism, which runs AMC DigiFlex drives on a 125 kbit/s CANopen bus. I connected to the drives over RS-232 with DriveWare, checked node IDs, baud rate, bus termination and wiring continuity, and narrowed the fault to the master controller board.',
+      "Converted the SEV's draw.io wiring diagrams into KiCad schematics that follow the team drawing standard, organized in hierarchical sheets and tracked in git.",
+      'Traced and documented the exterior lighting wiring before an upgrade, picked a flyback diode (6A10) for the inductive load, and wrote a one-page design note on the choice.',
     ],
   },
   {
-    org: 'FRC Team 2468',
+    org: 'FRC Team 2468, Westlake High School',
     role: 'Electrical co-lead in 2026. Team member from 2022 to 2025.',
     when: '2022 to 2026',
-    points: ['TODO: what you led or built on the robot electrical system.', 'TODO: a result, for example a competition or a fix you made.'],
+    points: [
+      'Worked on competition robot wiring, motor controller setup and board bring-up.',
+      'Debugged robot electrical faults in the shop and at competitions with a multimeter and vendor diagnostic software.',
+    ],
   },
 ];
 
 const education = [
   {
     org: 'University of Texas at San Antonio (UTSA)',
-    role: 'Electrical engineering',
+    role: 'B.S. Electrical Engineering, expected May 2030',
     when: 'Started fall 2026',
-    points: ['TODO: expected graduation year, and any relevant courses or clubs.'],
+    points: ['Coursework: Intro to Electrical Engineering with lab, Calculus II, Physics I with lab.'],
   },
 ];
 
-// Every item here comes from a project on this site. TODO: check this list and add anything missing.
+// From the resume and the projects on this site.
 const skills = [
-  { group: 'Digital design', items: ['Verilog', 'Xilinx Vivado', 'Artix-7 (Arty A7-100T)', 'Timing closure', 'Block RAM', 'Clock domain crossing'] },
+  { group: 'Digital design', items: ['Verilog', 'Vivado', 'Artix-7 (Arty A7-100T)', 'Static timing analysis', 'Clock domain crossing', 'Block RAM'] },
   { group: 'Verification', items: ['cocotb', 'Icarus Verilog', 'Python reference models'] },
-  { group: 'Interfaces', items: ['Ethernet MII', 'UDP', 'Nasdaq ITCH 5.0', 'MoldUDP64', 'UART'] },
-  { group: 'Software and tools', items: ['Python', 'MATLAB', 'KiCad', 'Raspberry Pi'] },
+  { group: 'Hardware', items: ['KiCad (schematics, PCB layout)', 'Soldering', 'Multimeter debugging', 'Battery systems'] },
+  { group: 'Interfaces', items: ['CAN / CANopen', 'RS-232', 'Ethernet / UDP', 'UART', 'Nasdaq ITCH 5.0'] },
+  { group: 'Software', items: ['Python', 'C++', 'Java', 'MATLAB', 'Linux', 'git'] },
 ];
 
 const resume = hasResume();
@@ -57,7 +65,6 @@ const isTodo = (s: string) => s.startsWith('TODO');
   <div class="wrap">
     <header class="head">
       <div>
-        <p class="label">About</p>
         <h1>{SITE.name}</h1>
       </div>
       <ProfilePhoto size={120} class="about-photo" />

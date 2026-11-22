@@ -5,7 +5,7 @@ import { SITE } from '../site.config';
 <footer class="mt-24 border-t border-rule">
   <div class="wrap flex flex-wrap items-center justify-between gap-4 py-8 font-mono text-sm text-muted">
     <span class="text-ink">{SITE.name}</span>
-    <span class="flex flex-wrap gap-5">
+    <span class="flex flex-wrap gap-x-5 gap-y-1 [&>a]:py-2">
       <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
       <a href={SITE.github} rel="me">GitHub</a>
       <a href={SITE.linkedin} rel="me">LinkedIn</a>

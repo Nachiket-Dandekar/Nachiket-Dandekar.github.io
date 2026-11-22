@@ -22,9 +22,8 @@ const title = `${log.data.title}: ${project?.data.title ?? log.id}`;
 <BaseLayout title={title} description={`Build log for ${project?.data.title ?? log.id}, stage by stage.`}>
   <article class="wrap">
     <a href={url(`/projects/${log.id}/`)} class="back mono-sm">&larr; Back to the project</a>
-    <p class="label mt-6">{log.data.title}</p>
-    <h1>{project?.data.title}</h1>
-    <p class="mono-sm">Newest entries first. Copied from the project's docs/log.md.</p>
+    <h1 class="mt-6">{log.data.title}</h1>
+    <p class="mono-sm">{project?.data.title}. Newest entries first.</p>
     <div class="prose log">
       <Content />
     </div>

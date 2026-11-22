@@ -99,6 +99,18 @@
   samp {
     font-family: var(--font-mono);
   }
+  /* No single word left alone on the last line; headings break into even lines. */
+  p,
+  li,
+  dd,
+  figcaption {
+    text-wrap: pretty;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
 }
 
 @layer components {

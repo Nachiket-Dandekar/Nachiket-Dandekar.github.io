@@ -23,8 +23,8 @@ const href = (h: string) => (h.startsWith('/') ? url(h) : h);
   <div class="wrap">
     <section class="hero" aria-labelledby="name">
       <div>
-        <p class="kicker">Electrical engineering &middot; UTSA</p>
         <h1 id="name">{SITE.name}</h1>
+        <p class="subtitle">Electrical engineering &middot; UTSA</p>
         <p class="intro">
           I'm an electrical engineering freshman at UTSA, and I want to work on FPGAs, low-latency
           systems and chip design. Below are the things I've built, with the numbers I measured.
@@ -94,19 +94,17 @@ const href = (h: string) => (h.startsWith('/') ? url(h) : h);
     align-items: center;
     padding: 4.5rem 0 3rem;
   }
-  .kicker {
-    font: 500 0.8125rem var(--font-mono);
+  .subtitle {
+    font: 500 1rem var(--font-mono);
     color: var(--muted);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 0.9rem;
+    margin: -0.35rem 0 1.1rem;
   }
   h1 {
     font-size: 3.5rem;
     line-height: 1.05;
     font-weight: 700;
     letter-spacing: -0.02em;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
   }
   .intro {
     max-width: 54ch;
@@ -200,8 +198,8 @@ const href = (h: string) => (h.startsWith('/') ? url(h) : h);
       display: block;
       padding: 1.75rem 0 1.75rem;
     }
-    .kicker {
-      padding-right: 4.5rem;
+    .subtitle {
+      font-size: 0.9rem;
     }
     h1 {
       font-size: 2.3rem;
@@ -214,7 +212,7 @@ const href = (h: string) => (h.startsWith('/') ? url(h) : h);
       top: 1.75rem;
     }
     .facts li {
-      font-size: 0.72rem;
+      font-size: 0.8rem;
     }
   }
 </style>

@@ -11,7 +11,6 @@ const counts = Object.fromEntries(TAGS.map((t) => [t, projects.filter((p) => p.d
 <BaseLayout title="Projects" description="Every project I've built, newest first, with the numbers I measured.">
   <div class="wrap">
     <header class="head">
-      <p class="label">Projects</p>
       <h1>Things I've built</h1>
       <p class="sub">Newest first. Each one has the numbers I measured and what went wrong along the way.</p>
     </header>
@@ -28,6 +27,7 @@ const counts = Object.fromEntries(TAGS.map((t) => [t, projects.filter((p) => p.d
     </div>
     <p class="status mono-sm" role="status" aria-live="polite" data-filter-status></p>
 
+    <h2 class="sr-only">Project list</h2>
     <div class="list" data-project-list>
       {projects.map((p, i) => <ProjectRow project={p} priority={i === 0} />)}
       {projects.length === 0 && <p class="mono-sm py-6">No projects yet.</p>}
