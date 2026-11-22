@@ -34,6 +34,8 @@ const missingDownloads = d.downloads.filter((f) => !projectFileUrl(project, f.fi
 if (missingDownloads.length) {
   throw new Error(`${project.id}: download file not found in the project folder: ${missingDownloads.map((f) => f.file).join(', ')}`);
 }
+// Only show the Links section when there is something to list.
+const hasLinks = !!d.repo || hasLog || downloads.length > 0 || d.links.length > 0;
 ---
 
 <BaseLayout title={d.title} description={d.summary} image={d.cover}>
@@ -79,44 +81,48 @@ if (missingDownloads.length) {
       <Content components={mdxComponents} />
     </div>
 
-    <section aria-labelledby="s-links">
-      <h2 id="s-links" class="sec"><span class="n">{linksNumber}</span>Links</h2>
-      <ul class="links">
-        {
-          d.repo &&
-            (d.repoPublic ? (
-              <li>
-                <a href={d.repo}>GitHub repository</a>
-              </li>
-            ) : (
-              <li class="muted">GitHub repository (private for now)</li>
-            ))
-        }
-        {
-          hasLog && (
-            <li>
-              <a href={url(`/projects/${project.id}/log/`)}>Build log</a>
-            </li>
-          )
-        }
-        {
-          downloads.map((f) => (
-            <li>
-              <a href={f.href} download={f.file}>
-                {f.label}
-              </a>
-            </li>
-          ))
-        }
-        {
-          d.links.map((l) => (
-            <li>
-              <a href={l.href}>{l.label}</a>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
+    {
+      hasLinks && (
+        <section aria-labelledby="s-links">
+          <h2 id="s-links" class="sec"><span class="n">{linksNumber}</span>Links</h2>
+          <ul class="links">
+            {
+              d.repo &&
+                (d.repoPublic ? (
+                  <li>
+                    <a href={d.repo}>GitHub repository</a>
+                  </li>
+                ) : (
+                  <li class="muted">GitHub repository (private for now)</li>
+                ))
+            }
+            {
+              hasLog && (
+                <li>
+                  <a href={url(`/projects/${project.id}/log/`)}>Build log</a>
+                </li>
+              )
+            }
+            {
+              downloads.map((f) => (
+                <li>
+                  <a href={f.href} download={f.file}>
+                    {f.label}
+                  </a>
+                </li>
+              ))
+            }
+            {
+              d.links.map((l) => (
+                <li>
+                  <a href={l.href}>{l.label}</a>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+      )
+    }
   </article>
 </BaseLayout>
 

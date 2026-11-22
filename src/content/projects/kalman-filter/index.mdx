@@ -129,7 +129,3 @@ The chart is one run of the same filter, run again in Python with a fixed random
 | Average position error, 200 runs | 3.12 m | 1.25 m |
 
 The Kalman gain starts at 0.10 and settles near 0.16 within about 1.4 seconds. After that, each new reading moves the position estimate about 16% of the way toward what the sensor says.
-
-## What I would do next
-
-TODO: next steps. {/* Two options that follow from this page: add acceleration to the state so the model matches a robot that speeds up, which should remove the lag; or fuse two sensors, like wheel encoders and an IMU, as in the wheel-slip example. */}

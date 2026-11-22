@@ -43,13 +43,17 @@ The page always runs in this order:
 
 1. Summary and headline numbers (from the front matter)
 2. Video (from `youtube`)
-3. Your `##` sections, numbered in order. Use these five:
+3. Your `##` sections, numbered in order. Use these:
    - `## Why I built it`
    - `## How it works`
    - `## What went wrong and what I optimized`
    - `## Results`
-   - `## What I would do next`
+   - `## What I would do next` (optional: leave it out for a finished project, like a class project)
 4. Links (from `repo`, `downloads`, `links`, and the build log)
+
+The numbers update on their own, so leaving a section out never leaves a gap.
+
+To list sources, like the pages you used for a presentation, add them under `links:` in the front matter. They show up in the Links section.
 
 Use `###` for smaller headings inside a section.
 
