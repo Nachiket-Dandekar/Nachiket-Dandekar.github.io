@@ -186,6 +186,14 @@
     padding: 1rem 1.1rem;
     overflow-x: auto;
   }
+  /* Code is plain text with gray comments, so the highlighter's blue and red don't clash with the color rule. */
+  .prose pre.astro-code,
+  .prose pre.astro-code span {
+    color: var(--ink) !important;
+  }
+  .prose pre.astro-code span[style*='#6A737D' i] {
+    color: var(--muted) !important;
+  }
   .prose table {
     width: 100%;
     border-collapse: collapse;

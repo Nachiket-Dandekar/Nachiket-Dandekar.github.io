@@ -4,11 +4,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/strip-metadata.mjs",
     "dev": "astro dev",
+    "prebuild": "node scripts/strip-metadata.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "todos": "node scripts/list-todos.mjs"
+    "todos": "node scripts/list-todos.mjs",
+    "strip-metadata": "node scripts/strip-metadata.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.6",

@@ -20,6 +20,7 @@ Other commands:
 | `npm run build` | Builds the live site into `dist/` |
 | `npm run preview` | Serves `dist/` so you can check the build |
 | `npm run todos` | Lists every `TODO:` still in the content |
+| `npm run strip-metadata` | Removes hidden photo data (GPS location, camera, dates) from every image. Also runs on its own before `dev` and `build` |
 | `npm run check` | Type-checks the code |
 
 ## If the dev server shows old content
@@ -60,6 +61,7 @@ The URL is never hard-coded. The workflow works it out from the repository name.
 
 ## Privacy
 
+- Images are stripped of hidden metadata (GPS location, camera model, dates) before every dev run and build, and the build re-encodes every image it publishes.
 - Fonts are served from this site, not Google.
 - YouTube thumbnails are downloaded at build time. The player loads from `youtube-nocookie.com` only after someone presses play.
 - No analytics. Ask before adding any.

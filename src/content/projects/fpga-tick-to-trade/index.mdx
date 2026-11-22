@@ -93,8 +93,6 @@ On the Pi, one command runs the whole board test. It prints how many orders came
 python3 tick_test.py itch_orders.bin --host 10.0.0.255 --gap 0.001
 ```
 
-{/* TODO: add a short Verilog snippet here if you want one, for example the pipelined price-to-level step. Paste only the few lines you want to show. */}
-
 ## What went wrong and what I optimized
 
 The first build at 100 MHz failed timing by 6.263 ns, with 1,177 failing endpoints. The slowest path took about 16.3 ns, so the design topped out near 61 MHz.
@@ -102,6 +100,23 @@ The first build at 100 MHz failed timing by 6.263 ns, with 1,177 failing endpoin
 The timing report showed the slow path. The order book turned a price into a price level with a divide by 100, and used the result as a memory address in the same clock cycle. That path had 30 levels of logic.
 
 I ran the design at 50 MHz to get it working, then fixed the path. The divide became a multiply by a reciprocal spread over several cycles, and the memory read and write steps were split apart. The design now meets 100 MHz.
+
+Here is the fix, trimmed from `rtl/order_book.v`. Prices sit on a 100-unit tick, so the level is the distance from the bottom of the window divided by 100. Dividing by 4 is a free bit shift, and 167773 / 2²² is very close to 1/25, so one multiply and one bit slice do the rest. Each step gets its own clock cycle.
+
+```verilog
+// Cycle 1: distance from the bottom of the price window
+p_diff <= price - base_price;
+
+// Cycle 2: divide by 100 as (p_diff / 4) * (1 / 25)
+//   p_diff[18:2] is p_diff / 4, and 167773 / 2^22 is about 1/25
+p_prod <= p_diff[18:2] * 18'd167773;
+
+// Cycle 3: bits 22 and up of the product are the price level
+wire [LEVEL_BITS-1:0] div_lvl = p_prod[22 +: LEVEL_BITS];
+m_lvl <= div_lvl;
+```
+
+It gives the same answer as a real divide for every price offset in the window, all 409,600 of them.
 
 <BeforeAfter
   rows={[

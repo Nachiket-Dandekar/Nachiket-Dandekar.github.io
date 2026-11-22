@@ -7,7 +7,7 @@ Each project is one folder. Add the folder, and the site does the rest: the home
 1. Copy `templates/project/` to `src/content/projects/your-project-name/`.
    The folder name becomes the URL, for example `/projects/your-project-name/`. Use lowercase words and dashes.
 2. Put the images for the project in that same folder. Name the main photo `cover.jpg` (or change `cover:` to match).
-   Use the full-size photos. The site resizes and compresses them when it builds.
+   Use the full-size photos. The site resizes and compresses them when it builds, and removes hidden data like GPS location from phone photos.
 3. Edit `index.mdx`: fill in the front matter at the top, then write the sections.
 4. Run `npm run dev` and open http://localhost:4321 to check it. Drafts show there with a "draft" label.
 5. When it is ready, set `draft: false`, then commit and push to `main`. GitHub builds and deploys the site.
