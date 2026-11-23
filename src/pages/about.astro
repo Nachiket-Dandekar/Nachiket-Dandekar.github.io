@@ -9,10 +9,10 @@ import { hasResume, url } from '../lib/utils';
 // on the page until you replace them.
 // ---------------------------------------------------------------------------
 const bio = [
-  "I'm from Austin, Texas, and I started electrical engineering at UTSA in fall 2026.",
-  'I want to work in hardware: FPGAs, low-latency systems and chip design. In my tick-to-trade project I built the whole path from market data to order on an FPGA, measured it on the board, and found what limits it.',
-  'TODO: one or two sentences on how you got into hardware.',
-  "I'm looking for a full-time internship for summer 2027, and I'm willing to relocate.",
+  "I'm a first-year Electrical Engineering student at UTSA, from Austin, Texas.",
+  "Before college I spent four years on FRC Team 2468's electrical subteam. I wired the robots, set up motor controllers, and debugged electrical problems in the shop and at competitions. I co-led the subteam my senior year.",
+  "This summer I interned at NASA Johnson Space Center on the electrical team for the Space Exploration Vehicle. I restored the vehicle's battery packs after a cell failure took it offline, tracked down a CAN communication fault in the cabana mechanism, and moved the vehicle's wiring diagrams into KiCad.",
+  "I'm most interested in FPGAs and low-latency hardware. My latest project is a tick-to-trade system on an Arty A7. It reads real Nasdaq market data over Ethernet and sends an order back in 130 ns. Next I'm designing my own FPGA board to get past the Arty's 100 Mb/s Ethernet limit.",
 ];
 
 // From the resume. FRC roles follow what Nachiket said: member 2022 to 2025, co-lead in 2026.
@@ -72,6 +72,11 @@ const isTodo = (s: string) => s.startsWith('TODO');
 
     <section class="bio" aria-label="Bio">
       {bio.map((p) => <p class:list={{ todo: isTodo(p) }}>{p}</p>)}
+      <p>
+        I'm looking for Summer 2027 internships in hardware, FPGA or embedded work. You can reach me by{' '}
+        <a href={`mailto:${SITE.email}`}>email</a> or find me on <a href={SITE.linkedin}>LinkedIn</a> and{' '}
+        <a href={SITE.github}>GitHub</a>.
+      </p>
       {
         resume ? (
           <p>
