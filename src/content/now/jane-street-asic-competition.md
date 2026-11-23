@@ -2,7 +2,7 @@
 title: Jane Street protocol emulator ASIC competition
 stage: Coming soon
 topic: ASIC
-order: 1
+order: 3
 link:
   label: The competition
   href: https://blog.janestreet.com/protocol-emulator-asic-competition/
