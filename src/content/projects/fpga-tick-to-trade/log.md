@@ -2,7 +2,6 @@
 title: Build log
 ---
 
-<!-- Copied from Sample_FPGA/docs/log.md. Image paths changed to ./ so the site can optimize them. -->
 
 ## 2026-11-15: Stage 4 on the board, tick to trade
 
@@ -20,7 +19,7 @@ title: Build log
 
 ![Full file: 159 of 159 orders match, status line from the board](./stage4_board_full_file.png)
 
-![Latency of the 159 orders](./stage4_latency_chart.png)
+The latency of all 159 orders is charted on the [project page](/projects/fpga-tick-to-trade/#results).
 
 ![Timing per clock at 100 MHz, all met](./timing_100mhz_pass.png)
 

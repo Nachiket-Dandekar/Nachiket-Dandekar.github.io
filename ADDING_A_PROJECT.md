@@ -27,7 +27,7 @@ That's it. You never need to edit any other file.
 | `stats` | no | Headline numbers. The first one is the big number on the card. Each has `value`, optional `unit`, and `label`. |
 | `cover` | no | Card and page image, e.g. `./cover.jpg`. |
 | `coverAlt` | with `cover` | Alt text for the cover. The build fails without it. |
-| `youtube` | no | YouTube video id (the part after `watch?v=`). Leave it out to show a "coming soon" placeholder. |
+| `youtube` | no | YouTube video id (the part after `watch?v=`). Leave it out to show a "coming soon" placeholder. Videos always play muted on this site, but the same video on youtube.com has sound, so upload a copy with no audio track: `ffmpeg -i in.mp4 -c:v copy -an out.mp4`. |
 | `repo` | no | GitHub link. |
 | `repoPublic` | no | `false` hides the link and shows "private for now". Set to `true` when the repo is public. |
 | `downloads` | no | Files in the project folder to offer, e.g. `{ label: 'Raw data (CSV)', file: data.csv }`. |

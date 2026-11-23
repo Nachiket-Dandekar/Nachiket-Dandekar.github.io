@@ -16,5 +16,9 @@ Thumbs.db
 .vscode/
 .idea/
 
-# design mockups (not part of the site)
-design-options/
+# local tool folders: every top-level folder starting with a dot, except .github
+/.*/
+!/.github/
+
+# local tool lock file
+skills-lock.json

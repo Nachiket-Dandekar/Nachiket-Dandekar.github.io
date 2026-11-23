@@ -61,8 +61,8 @@ function layout(W: number, H: number, xTickCount: number) {
   const sx = (v: number) => m.l + ((v - xMin) / (xMax - xMin || 1)) * iw;
   const sy = (v: number) => m.t + ih - ((v - yLo) / (yHi - yLo || 1)) * ih;
   const xTicks = Array.from({ length: xTickCount }, (_, i) => +(xMin + ((xMax - xMin) * i) / (xTickCount - 1)).toFixed(2));
-  const paths = series.map((s, si) => rows.map((r, i) => `${i ? 'L' : 'M'}${sx(r[xi]).toFixed(1)},${sy(r[yis[si]]).toFixed(1)}`).join(''));
-  const dots = series.map((s, si) => rows.map((r) => [+sx(r[xi]).toFixed(1), +sy(r[yis[si]]).toFixed(1)]));
+  const paths = series.map((_s, si) => rows.map((r, i) => `${i ? 'L' : 'M'}${sx(r[xi]).toFixed(1)},${sy(r[yis[si]]).toFixed(1)}`).join(''));
+  const dots = series.map((_s, si) => rows.map((r) => [+sx(r[xi]).toFixed(1), +sy(r[yis[si]]).toFixed(1)]));
   return { W, H, m, iw, sx, sy, xTicks, paths, dots };
 }
 const views = [

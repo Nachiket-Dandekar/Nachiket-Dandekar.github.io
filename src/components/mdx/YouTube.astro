@@ -137,13 +137,14 @@ if (id) {
       });
       iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(wrap.dataset.yt ?? '')}?${params}`;
       iframe.title = `${wrap.dataset.title ?? 'YouTube video'} (muted)`;
-      iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+      // No picture-in-picture: a floating player would escape the muting below.
+      iframe.allow = 'autoplay; encrypted-media';
       iframe.allowFullscreen = true;
       iframe.referrerPolicy = 'strict-origin-when-cross-origin';
       button.replaceWith(iframe);
       // Keep it muted the whole time: re-send mute and volume 0 several times a second.
       const send = (func: string, args: unknown[] = []) =>
-        iframe.contentWindow?.postMessage(JSON.stringify({ event: 'command', func, args }), '*');
+        iframe.contentWindow?.postMessage(JSON.stringify({ event: 'command', func, args }), 'https://www.youtube-nocookie.com');
       const keepMuted = () => {
         if (!iframe.isConnected) return clearInterval(timer);
         send('mute');

@@ -17,6 +17,8 @@ interface Props {
 const { title, description = SITE.description, image } = Astro.props;
 const pageTitle = title ? `${title} | ${SITE.shortName}` : `${SITE.shortName}, electrical engineering`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+// The 404 page has no real address, so it gets no canonical link and is kept out of search results.
+const isNotFound = /\/404(\.html)?\/?$/.test(Astro.url.pathname);
 const ogImage = image ? new URL((await getImage({ src: image, width: 1200, format: 'jpg' })).src, Astro.site) : undefined;
 ---
 
@@ -27,14 +29,14 @@ const ogImage = image ? new URL((await getImage({ src: image, width: 1200, forma
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {isNotFound ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
     <link rel="sitemap" href={url('/sitemap-index.xml')} />
     <meta name="theme-color" content="#0d1626" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {!isNotFound && <meta property="og:url" content={canonical} />}
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
     <meta name="generator" content={Astro.generator} />
@@ -55,10 +57,13 @@ const ogImage = image ? new URL((await getImage({ src: image, width: 1200, forma
     <Footer />
     <script>
       // Every video on the site stays muted the whole time. If anything unmutes it or turns the
-      // volume up, it is muted again right away, and the volume control is hidden where possible.
+      // volume up, it is muted again right away. Picture-in-picture is off so it cannot escape this.
+      // Best of all, upload video files with no audio track (see ADDING_A_PROJECT.md).
       const lock = (v: HTMLVideoElement) => {
+        v.defaultMuted = true;
         v.muted = true;
         v.volume = 0;
+        v.disablePictureInPicture = true;
         v.setAttribute('muted', '');
         v.addEventListener('volumechange', () => {
           if (!v.muted || v.volume > 0) {
