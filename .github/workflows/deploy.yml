@@ -1,10 +1,11 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Build and deploy every push to main.
-  push:
-    branches: [main]
-  # Also allow a manual run from the Actions tab.
+  # The site is offline for now, so pushes do not publish it.
+  # To publish again: add these two lines back under "on:", then push.
+  #   push:
+  #     branches: [main]
+  # A manual run from the Actions tab still works.
   workflow_dispatch:
 
 permissions:
